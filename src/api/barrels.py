@@ -30,12 +30,14 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         if barrel.sku == "SMALL_GREEN_BARREL":
             total_greenml += barrel.ml_per_barrel * barrel.quantity
             total_price += barrel.price * barrel.quantity
+            print("yes")
 
     if total_greenml > 0:
         with db.engine.begin() as connection:
             connection.execute(sqlalchemy.text("UPDATE global_inventory \
-                                                SET num_green_ml = num_green_ml + {total_greenml}, \
-                                                gold = gold -{total_price}"))
+                                                SET num_green_ml = num_green_ml + :total_greenml, \
+                                                gold = gold - :total_price"),
+                                                 {"total_greenml": total_greenml, "total_price": total_price})
 
     return "OK"
 

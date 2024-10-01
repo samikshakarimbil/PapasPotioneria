@@ -68,6 +68,8 @@ def search_orders(
         ],
     }
 
+cart_id=0
+cart_dict={}
 
 class Customer(BaseModel):
     customer_name: str
@@ -79,6 +81,7 @@ def post_visits(visit_id: int, customers: list[Customer]):
     """
     Which customers visited the shop today?
     """
+
     print(customers)
 
     return "OK"
@@ -87,7 +90,12 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
-    return {"cart_id": 1}
+    cart_id = str(int(cart_id + 1))
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("INSERT INTO carts (id, customer) VALUES (:cart_id, new_cart)"),
+                           {"cart_id": cart_id})
+    
+    return {"cart_id": cart_id}
 
 
 class CartItem(BaseModel):
@@ -97,8 +105,12 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("UPDATE carts SET items = items + :qty"),
+                           {"qty": cart_item.quantity})
 
-    return "OK"
+
+    return {"success": True}
 
 
 class CartCheckout(BaseModel):
@@ -108,4 +120,18 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
-    return {"total_potions_bought": 1, "total_gold_paid": 50}
+    with db.engine.begin() as connection:
+        result=connection.execute(sqlalchemy.text("SELECT id FROM carts")).mappings()
+ 
+
+
+    gold_paid = cart_checkout.payment
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :pay"),
+                           {"pay": gold_paid})
+
+
+    return {
+        "total_potions_bought": "integer",
+        "total_gold_paid": gold_paid
+    }
