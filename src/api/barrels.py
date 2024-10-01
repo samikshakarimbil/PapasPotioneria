@@ -53,8 +53,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     
     if green_barrel:
         with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory"))
-        if result.first().num_green_potions < 10 and result.first().gold >= barrel.price:
+            result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory")).mappings()
+            result = result.fetchone()
+        if result["num_green_potions"] < 10 and result["gold"] >= barrel.price:
             return [
                 {
                     "sku": "SMALL_GREEN_BARREL",

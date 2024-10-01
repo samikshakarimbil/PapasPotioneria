@@ -25,12 +25,14 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     for potion in potions_delivered:
         if potion.potion_type == [0, 100, 0, 0]:
             total_potions += potion.quantity
-            total_ml += potion.potion_type[1] * potion.quantity
+            # total_ml += potion.potion_type[1] * potion.quantity
 
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory \
-                                           SET num_green_potions = num_green_potions + {total_potions} \
-                                           num_green_ml = num_green_ml - {total_ml}"))
+        connection.execute(sqlalchemy.text(
+            "UPDATE global_inventory \
+                SET num_green_potions = num_green_potions + :total_potions, \
+                    num_green_ml = num_green_ml - :total_potions * 100"),
+                                           {"total_potions": total_potions})
     
     return "OK"
 
@@ -55,7 +57,7 @@ def get_bottle_plan():
         return [
                 {
                     "potion_type": [0, 100, 0, 0],
-                    "quantity": green,
+                    "quantity": num_green,
                 }
             ]
     return[]
