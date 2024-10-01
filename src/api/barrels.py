@@ -27,10 +27,9 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     total_greenml = 0
     total_price = 0
     for barrel in barrels_delivered:
-        if barrel.sku == "SMALL_GREEN_BARREL":
+        if barrel.potion_type == [0, 1, 0, 0]:
             total_greenml += barrel.ml_per_barrel * barrel.quantity
             total_price += barrel.price * barrel.quantity
-            print("yes")
 
     if total_greenml > 0:
         with db.engine.begin() as connection:
