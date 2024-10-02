@@ -11,6 +11,8 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
+cart_id="0"
+
 class search_sort_options(str, Enum):
     customer_name = "customer_name"
     item_sku = "item_sku"
@@ -69,7 +71,6 @@ def search_orders(
     }
 
 cart_id=0
-cart_dict={}
 
 class Customer(BaseModel):
     customer_name: str
@@ -90,12 +91,21 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
+
+    global cart_id
     cart_id = str(int(cart_id + 1))
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("INSERT INTO carts (id, customer) VALUES (:cart_id, new_cart)"),
-                           {"cart_id": cart_id})
-    
-    return {"cart_id": cart_id}
+        result = connection.execute(sqlalchemy.text("SELECT id FROM carts")).mappings()
+        result = result.fetchone()
+        new_cart=1
+        if result:
+            for ids in result.id:
+                if new_cart<ids:
+                    new_cart = ids
+        connection.execute(sqlalchemy.text("INSERT INTO carts (customer) VALUES (:new_cart)"),
+                           {"new_cart": new_cart})
+       
+    return {"cart_id": new_cart}
 
 
 class CartItem(BaseModel):
@@ -105,10 +115,23 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-    with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("UPDATE carts SET items = items + :qty"),
-                           {"qty": cart_item.quantity})
 
+    found = False
+    with db.engine.begin() as connection:
+        result=connection.execute(sqlalchemy.text("SELECT id FROM carts")).mappings()
+        result = result.fetchone()
+        if result:
+                for id in result.values():
+                    if id ==cart_id:
+                        found = True
+
+        if not found:
+            return {"success": False}
+        
+        qty = cart_item.quantity
+        print(qty)
+        connection.execute(sqlalchemy.text("UPDATE carts SET quantity = quantity + :qty"),
+                           {"qty": qty})
 
     return {"success": True}
 
@@ -119,19 +142,32 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-
-    with db.engine.begin() as connection:
-        result=connection.execute(sqlalchemy.text("SELECT id FROM carts")).mappings()
- 
-
-
     gold_paid = cart_checkout.payment
+    bought = 0
     with db.engine.begin() as connection:
+        inv=connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory")).mappings()
+        inv=inv.fetchone()
+        print(inv)
+
+        cart=connection.execute(sqlalchemy.text("SELECT id, quantity FROM carts")).mappings()
+        cart=cart.fetchone()
+        print(cart)
+        
+        if cart:
+            print(cart_id)
+            for id in cart.values():
+                print(id)
+                if id == cart_id:
+                    bought = cart.quantity
+        
         connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :pay"),
                            {"pay": gold_paid})
+        
+        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions - :bought"),
+                           {"bought": bought})
 
 
     return {
-        "total_potions_bought": "integer",
+        "total_potions_bought": bought,
         "total_gold_paid": gold_paid
     }
