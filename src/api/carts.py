@@ -129,7 +129,6 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
             return {"success": False}
         
         qty = cart_item.quantity
-        print(qty)
         connection.execute(sqlalchemy.text("UPDATE carts SET quantity = quantity + :qty"),
                            {"qty": qty})
 
@@ -147,12 +146,10 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     with db.engine.begin() as connection:
         inv=connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory")).mappings()
         inv=inv.fetchone()
-        print(inv)
 
         cart=connection.execute(sqlalchemy.text("SELECT id, quantity FROM carts")).mappings()
         cart=cart.fetchone()
-        print(cart)
-        
+
         if cart:
             print(cart_id)
             for id in cart.values():
