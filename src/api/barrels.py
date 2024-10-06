@@ -46,25 +46,35 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print(wholesale_catalog)
 
     bprice = 0
-    green_barrel = False
+    sku = ""
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
+        result = result.fetchone()
+    print(result)
+    least_ml = min(result["num_red_ml"], result["num_green_ml"], result["num_blue_ml"])
+    print("least:", least_ml)
+
     for barrel in wholesale_catalog:
-        if barrel.sku == "SMALL_GREEN_BARREL":
-            green_barrel = True
-            bprice = barrel.price
-            break
-    
-    if green_barrel:
-        print("there is a green barrel")
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory")).mappings()
-            result = result.fetchone()
-        print(result["num_green_potions"])
-        print(result["gold"])
-        if result["num_green_potions"] < 10 and result["gold"] >= bprice:
-            print("barrel plan is returning")
-            return [
+        if barrel.potion_type == [1, 0, 0, 0] and least_ml == 0:
+            if result["gold"] >= barrel.price:
+                bprice = barrel.price
+                sku = barrel.sku
+        elif barrel.potion_type == [0, 1, 0, 0] and least_ml == 1:
+            if result["gold"] >= barrel.price:
+                bprice = barrel.price
+                sku = barrel.sku
+        elif barrel.potion_type == [0, 0, 1, 0] and least_ml == 2:
+            if result["gold"] >= barrel.price:
+                bprice = barrel.price
+                sku = barrel.sku
+
+    print("barrel price: ", bprice)
+
+    if bprice:
+        return [
                 {
-                    "sku": "SMALL_GREEN_BARREL",
+                    "sku": sku,
                     "quantity": 1,
                 }
             ]

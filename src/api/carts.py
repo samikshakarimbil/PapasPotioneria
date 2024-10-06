@@ -92,8 +92,6 @@ def post_visits(visit_id: int, customers: list[Customer]):
 def create_cart(new_cart: Customer):
     """ """
 
-    global cart_id
-    cart_id = str(int(cart_id + 1))
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT id FROM carts")).mappings()
         result = result.fetchone()
