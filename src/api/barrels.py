@@ -22,19 +22,27 @@ class Barrel(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
-    total_greenml = 0
+    total_green_ml, total_red_ml, total_blue_ml = 0, 0, 0
     total_price = 0
     for barrel in barrels_delivered:
         if barrel.potion_type == [0, 1, 0, 0]:
-            total_greenml += barrel.ml_per_barrel * barrel.quantity
+            total_green_ml += barrel.ml_per_barrel * barrel.quantity
+            total_price += barrel.price * barrel.quantity
+        if barrel.potion_type == [1, 0, 0, 0]:
+            total_red_ml += barrel.ml_per_barrel * barrel.quantity
+            total_price += barrel.price * barrel.quantity
+        if barrel.potion_type == [0, 0, 1, 0]:
+            total_blue_ml += barrel.ml_per_barrel * barrel.quantity
             total_price += barrel.price * barrel.quantity
 
-    if total_greenml > 0:
-        with db.engine.begin() as connection:
-            connection.execute(sqlalchemy.text("UPDATE global_inventory \
-                                                SET num_green_ml = num_green_ml + :total_greenml, \
-                                                gold = gold - :total_price"),
-                                                 {"total_greenml": total_greenml, "total_price": total_price})
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("UPDATE global_inventory \
+                                            SET num_green_ml = num_green_ml + :total_greenml, \
+                                           num_red_ml = num_red_ml + :total_redml, \
+                                           num_blue_ml = num_blue_ml + :total_blueml, \
+                                            gold = gold - :total_price"), \
+                                            {"total_greenml": total_green_ml, "total_redml": total_red_ml, "total_blueml": total_blue_ml,
+                                              "total_price": total_price})
         print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"
