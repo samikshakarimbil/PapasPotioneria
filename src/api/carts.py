@@ -95,18 +95,14 @@ def create_cart(new_cart: Customer):
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT id FROM carts")).mappings()
         result = result.fetchall()
-        cart_id = 1
         
         if result:
             print("result: ", result)
-            for ids in result:
-                if ids["id"] > cart_id:
-                    cart_id = ids["id"]
-            cart_id += 1
-        connection.execute(sqlalchemy.text("INSERT INTO carts (id, customer) VALUES (:cart_id, :new_cart)"),
-                            {"cart_id": cart_id, "new_cart": new_cart.customer_name})
+        id = connection.execute(sqlalchemy.text("INSERT INTO carts (customer) VALUES (:new_cart) RETURNING id"),
+                            {"new_cart": new_cart.customer_name})
        
-    return {"cart_id": str(cart_id)}
+    id = id.fetchone()
+    return {"cart_id": str(id[0])}
 
 
 class CartItem(BaseModel):
@@ -178,14 +174,15 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             blue_purchased = cart["num_blue"]
             total = green_purchased + red_purchased + blue_purchased
         
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :pay"),
-                           {"pay": gold_paid})
-        
             connection.execute(sqlalchemy.text("UPDATE global_inventory \
-                                           SET num_green_potions = num_green_potions - :green, \
-                                           num_red_potions = num_red_potions - :red, \
-                                           num_blue_potions = num_blue_potions - :blue"),
-                           {"green": green_purchased, "red": red_purchased, "blue": blue_purchased})
+                                           SET gold = gold + :pay, \
+                                            num_green_potions = num_green_potions - :green, \
+                                            num_red_potions = num_red_potions - :red, \
+                                            num_blue_potions = num_blue_potions - :blue"),
+                           {"pay": gold_paid, "green": green_purchased, "red": red_purchased, "blue": blue_purchased})
+            
+            connection.execute(sqlalchemy.text("DELETE FROM carts WHERE id = :cart_id"),
+                               {"cart_id": cart_id})
             
             return {
                 "total_potions_bought": total,
