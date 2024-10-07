@@ -122,7 +122,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 
     with db.engine.begin() as connection:
         result=connection.execute(sqlalchemy.text("SELECT id FROM carts WHERE id = :cart_id"),
-                                  {"cart_id": cart_id}).mappings()
+                                  {"cart_id": int(cart_id)}).mappings()
         result = result.fetchone()
 
         if not result:
@@ -139,11 +139,13 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
                                            SET num_green = num_green + :qty \
                                            WHERE id = :cart_id"),
                            {"qty": qty, "cart_id": cart_id})
+            
         elif item_sku == "RED_POTION":
             connection.execute(sqlalchemy.text("UPDATE carts \
                                            SET num_red = num_red + :qty \
                                            WHERE id = :cart_id"),
                            {"qty": qty, "cart_id": cart_id})
+            
         elif item_sku == "BLUE_POTION":
             connection.execute(sqlalchemy.text("UPDATE carts \
                                            SET num_blue = num_blue + :qty \
@@ -162,12 +164,12 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     gold_paid = int(cart_checkout.payment)
     total: 0
     with db.engine.begin() as connection:
-        inv=connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
-        inv=inv.fetchone()
+        inv = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
+        inv = inv.fetchone()
 
-        cart=connection.execute(sqlalchemy.text("SELECT * FROM carts WHERE id = :cart_id"),
+        cart = connection.execute(sqlalchemy.text("SELECT * FROM carts WHERE id = :cart_id"),
                                 {"cart_id": cart_id}).mappings()
-        cart=cart.fetchone()
+        cart = cart.fetchone()
 
         if cart:
             print(cart_id)
@@ -190,4 +192,4 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                 "total_gold_paid": gold_paid
                 }
         
-        return {"Cart not found"}
+    return {"Cart not found"}
