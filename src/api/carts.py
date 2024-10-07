@@ -122,7 +122,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 
     with db.engine.begin() as connection:
         result=connection.execute(sqlalchemy.text("SELECT id FROM carts WHERE id = :cart_id"),
-                                  {"cart_id": str(cart_id)}).mappings()
+                                  {"cart_id": cart_id}).mappings()
         result = result.fetchone()
 
         if not result:
@@ -133,7 +133,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         qty = cart_item.quantity
         print("Quantity: ", qty)
         print("SKU: ", item_sku)
-        
+
         if item_sku == "GREEN_POTION":
             connection.execute(sqlalchemy.text("UPDATE carts \
                                            SET num_green = num_green + :qty \
@@ -189,3 +189,5 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                 "total_potions_bought": total,
                 "total_gold_paid": gold_paid
                 }
+        
+        return {"Cart not found"}
