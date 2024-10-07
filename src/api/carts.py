@@ -117,15 +117,23 @@ class CartItem(BaseModel):
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
 
+    print("Setting item quantity")
+    print("Cart id: ", cart_id)
+
     with db.engine.begin() as connection:
         result=connection.execute(sqlalchemy.text("SELECT id FROM carts WHERE id = :cart_id"),
-                                  {"cart_id": cart_id}).mappings()
+                                  {"cart_id": str(cart_id)}).mappings()
         result = result.fetchone()
 
         if not result:
             return {"success": False}
         
+        print("Result: ", result)
+        
         qty = cart_item.quantity
+        print("Quantity: ", qty)
+        print("SKU: ", item_sku)
+        
         if item_sku == "GREEN_POTION":
             connection.execute(sqlalchemy.text("UPDATE carts \
                                            SET num_green = num_green + :qty \
