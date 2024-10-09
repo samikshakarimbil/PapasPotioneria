@@ -97,8 +97,8 @@ def create_cart(new_cart: Customer):
                             {"new_cart": new_cart.customer_name})
        
     id = id.fetchone()
-    print("id: ", id)
-    return {"cart_id": str(id[0])}
+    print("id: ", id[0])
+    return {"cart_id": int(id[0])}
 
 
 class CartItem(BaseModel):
@@ -114,7 +114,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 
     with db.engine.begin() as connection:
         result=connection.execute(sqlalchemy.text("SELECT id FROM carts WHERE id = :cart_id"),
-                                  {"cart_id": int(cart_id)}).mappings()
+                                  {"cart_id": cart_id}).mappings()
         result = result.fetchone()
 
         if not result:
