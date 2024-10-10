@@ -153,7 +153,10 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-    gold_paid = int(cart_checkout.payment)
+
+    green_price = 50
+    red_price = 50
+    blue_price = 70
     total: 0
     with db.engine.begin() as connection:
         inv = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
@@ -169,6 +172,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             red_purchased =  cart["num_red"]
             blue_purchased = cart["num_blue"]
             total = green_purchased + red_purchased + blue_purchased
+            gold_paid = green_purchased*green_price + red_purchased*red_price + blue_purchased*blue_price
         
             connection.execute(sqlalchemy.text("UPDATE global_inventory \
                                            SET gold = gold + :pay, \
