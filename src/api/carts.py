@@ -181,9 +181,6 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                                             num_blue_potions = num_blue_potions - :blue"),
                            {"pay": gold_paid, "green": green_purchased, "red": red_purchased, "blue": blue_purchased})
             
-            connection.execute(sqlalchemy.text("DELETE FROM carts WHERE id = :cart_id"),
-                               {"cart_id": cart_id})
-            
             return {
                 "total_potions_bought": total,
                 "total_gold_paid": gold_paid
