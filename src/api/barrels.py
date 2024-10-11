@@ -87,6 +87,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             if result["gold"] >= barrel.price:
                 bprice = barrel.price
                 sku = barrel.sku
+                
         elif barrel.potion_type == [0, 1, 0, 0] and least_ml == 1:
             if result["gold"] >= barrel.price:
                 bprice = barrel.price
