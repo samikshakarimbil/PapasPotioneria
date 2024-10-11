@@ -46,13 +46,13 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     for barrel in barrels_delivered:
         if barrel.potion_type == [0, 1, 0, 0]:
             total_green_ml += barrel.ml_per_barrel * barrel.quantity
-            total_price += barrel.price * barrel.quantity
+            total_price += bp * barrel.quantity
         if barrel.potion_type == [1, 0, 0, 0]:
             total_red_ml += barrel.ml_per_barrel * barrel.quantity
-            total_price += barrel.price * barrel.quantity
+            total_price += bp * barrel.quantity
         if barrel.potion_type == [0, 0, 1, 0]:
             total_blue_ml += barrel.ml_per_barrel * barrel.quantity
-            total_price += barrel.price * barrel.quantity
+            total_price += bp * barrel.quantity
 
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text("UPDATE global_inventory \
@@ -72,40 +72,80 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
 
-    bprice = 0
-    sku = ""
+    sku, sku2 = "", ""
+    bought, bought2 = False, False
+    bp = 0
+    plan = []
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
         result = result.fetchone()
     print(result)
-    least_ml = min(result["num_red_ml"], result["num_green_ml"], result["num_blue_ml"])
-    print("least:", least_ml)
+
+    greenml = result["num_green_ml"]
+    redml = result["num_red_ml"]
+    blueml = result["num_blue_ml"]
+    greenptns = result["num_green_potions"]
+    redptns = result["num_red_potions"]
+    blueptns = result["num_blue_potions"]
+    gold = result["gold"]
+
+    least_ml = min(redml, greenml, blueml)
+    least_potions = min(redptns, greenptns, blueptns)
 
     for barrel in wholesale_catalog:
-        if barrel.potion_type == [1, 0, 0, 0] and least_ml == 0:
-            if result["gold"] >= barrel.price:
-                bprice = barrel.price
-                sku = barrel.sku
-                
-        elif barrel.potion_type == [0, 1, 0, 0] and least_ml == 1:
-            if result["gold"] >= barrel.price:
-                bprice = barrel.price
-                sku = barrel.sku
-        elif barrel.potion_type == [0, 0, 1, 0] and least_ml == 2:
-            if result["gold"] >= barrel.price:
-                bprice = barrel.price
-                sku = barrel.sku
+        total = 0
+        bp = barrel.price
+        if barrel.potion_type == [1, 0, 0, 0]:
+            if least_ml == 0 and not bought:
+                if gold >= bp:
+                    total += bp
+                    sku = barrel.sku
+                    bought = True
+            if least_potions == 0 and not bought2:
+                if gold >= bp:
+                    total += bp
+                    sku2 = barrel.sku
+                    bought2 = True
 
-    print("barrel price: ", bprice)
+        elif barrel.potion_type == [0, 1, 0, 0]:
+            if least_ml == 1 and not bought:
+                if gold >= bp:
+                    total += bp
+                    sku = barrel.sku
+                    bought = True
+            if least_potions == 1 and not bought2:
+                if gold >= bp:
+                    total += bp
+                    sku2 = barrel.sku
+                    bought2 = True
 
-    if bprice:
-        return [
-                {
-                    "sku": sku,
-                    "quantity": 1,
-                }
-            ]
+        elif barrel.potion_type == [0, 0, 1, 0]:
+            if least_ml == 2 and not bought:
+                if gold >= bp:
+                    total += bp
+                    sku = barrel.sku
+                    bought = True
+            if least_potions == 2 and not bought2:
+                if gold >= bp:
+                    total += bp
+                    sku2 = barrel.sku
+                    bought2 = True
+
+        gold -= total
+
+    print("barrel price: ", total)
+
+    if bought:
+        plan.append({
+            "sku": sku,
+            "quantity": 1
+        })
+
+    if bought2:
+        plan.append({
+            "sku": sku2,
+            "quantity": 1
+        })
     
-    return[]
-
+    return plan
