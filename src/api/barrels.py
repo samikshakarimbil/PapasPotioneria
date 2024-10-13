@@ -97,11 +97,15 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         total = 0
         bp = barrel.price
         if barrel.potion_type == [1, 0, 0, 0]:
-            if least_ml == 0 and not bought:
-                if gold >= bp:
-                    total += bp
-                    sku = barrel.sku
-                    bought = True
+            if least_ml == 0 and not bought: 
+                if least_potions != 0:
+                    if gold >= bp:
+                        total += bp
+                        sku = barrel.sku
+                        bought = True
+                else:
+                    least_potions = min(greenptns, blueptns)
+
             if least_potions == 0 and not bought2:
                 if gold >= bp:
                     total += bp
@@ -110,10 +114,14 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         elif barrel.potion_type == [0, 1, 0, 0]:
             if least_ml == 1 and not bought:
-                if gold >= bp:
-                    total += bp
-                    sku = barrel.sku
-                    bought = True
+                if least_potions != 1:
+                    if gold >= bp:
+                        total += bp
+                        sku = barrel.sku
+                        bought = True
+                else:
+                    least_potions = min(redptns, blueptns)
+
             if least_potions == 1 and not bought2:
                 if gold >= bp:
                     total += bp
@@ -122,10 +130,14 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         elif barrel.potion_type == [0, 0, 1, 0]:
             if least_ml == 2 and not bought:
-                if gold >= bp:
-                    total += bp
-                    sku = barrel.sku
-                    bought = True
+                if least_potions != 2:
+                    if gold >= bp:
+                        total += bp
+                        sku = barrel.sku
+                        bought = True
+                else:
+                    least_potions = min(greenptns, redptns)
+                    
             if least_potions == 2 and not bought2:
                 if gold >= bp:
                     total += bp
