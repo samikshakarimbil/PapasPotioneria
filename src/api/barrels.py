@@ -90,11 +90,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     blueptns = int(result["num_blue_potions"])
     gold = int(result["gold"])
 
-    least_ml = min(redml, greenml, blueml)
+    least_ml = min(greenml, blueml)
     print("min func ml: ", least_ml)
-    if(redml < greenml and redml < blueml):
-        least_ml = 0
-    elif(greenml < redml and greenml < blueml):
+    # if(redml < greenml and redml < blueml):
+    #     least_ml = 0
+    if(greenml < redml and greenml < blueml):
         least_ml = 1
     elif(blueml < greenml and blueml < redml):
         least_ml = 2
@@ -103,11 +103,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print("Blue ml: ", blueml)
     print("Least ml: ", least_ml)
 
-    least_potions = min(redptns, greenptns, blueptns)
+    least_potions = min(greenptns, blueptns)
     print("min func potions: ", least_potions)
-    if(redptns < greenptns and redptns < blueptns):
-        least_potions = 0
-    elif(greenptns < redptns and greenptns < blueptns):
+    # if(redptns < greenptns and redptns < blueptns):
+    #     least_potions = 0
+    if(greenptns < redptns and greenptns < blueptns):
         least_potions = 1
     elif(blueptns < greenml and blueptns < redptns):
         least_potions = 2
