@@ -46,13 +46,13 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     for barrel in barrels_delivered:
         if barrel.potion_type == [0, 1, 0, 0]:
             total_green_ml += barrel.ml_per_barrel * barrel.quantity
-            total_price += bp * barrel.quantity
+            total_price += barrel.price * barrel.quantity
         if barrel.potion_type == [1, 0, 0, 0]:
             total_red_ml += barrel.ml_per_barrel * barrel.quantity
-            total_price += bp * barrel.quantity
+            total_price += barrel.price * barrel.quantity
         if barrel.potion_type == [0, 0, 1, 0]:
             total_blue_ml += barrel.ml_per_barrel * barrel.quantity
-            total_price += bp * barrel.quantity
+            total_price += barrel.price * barrel.quantity
 
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text("UPDATE global_inventory \
@@ -137,7 +137,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         bought = True
                 else:
                     least_potions = min(greenptns, redptns)
-                    
+
             if least_potions == 2 and not bought2:
                 if gold >= bp:
                     total += bp
