@@ -82,21 +82,21 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         result = result.fetchone()
     print(result)
 
-    greenml = result["num_green_ml"]
-    redml = result["num_red_ml"]
-    blueml = result["num_blue_ml"]
-    greenptns = result["num_green_potions"]
-    redptns = result["num_red_potions"]
-    blueptns = result["num_blue_potions"]
-    gold = result["gold"]
+    greenml = int(result["num_green_ml"])
+    redml = int(result["num_red_ml"])
+    blueml = int(result["num_blue_ml"])
+    greenptns = int(result["num_green_potions"])
+    redptns = int(result["num_red_potions"])
+    blueptns = int(result["num_blue_potions"])
+    gold = int(result["gold"])
 
     least_ml = min(redml, greenml, blueml)
     if(redml < greenml and redml < blueml):
-        least_ml = redml
+        least_ml = 0
     elif(greenml < redml and greenml < blueml):
-        least_ml = greenml
+        least_ml = 1
     elif(blueml < greenml and blueml < redml):
-        least_ml = blueml
+        least_ml = 2
     print("Red ml: ", redml)
     print("Green ml: ", greenml)
     print("Blue ml: ", blueml)
@@ -104,11 +104,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     least_potions = min(redptns, greenptns, blueptns)
     if(redptns < greenptns and redptns < blueptns):
-        least_potions = redptns
+        least_potions = 0
     elif(greenptns < redptns and greenptns < blueptns):
-        least_potions = greenptns
+        least_potions = 1
     elif(blueptns < greenml and blueptns < redptns):
-        least_potions = blueptns
+        least_potions = 2
     print("Red potions: ", redptns)
     print("Green potions: ", greenptns)
     print("Blue potions: ", blueptns)

@@ -66,18 +66,24 @@ def get_bottle_plan():
     greenml = result["num_green_ml"]
     redml = result["num_red_ml"]
     blueml = result["num_blue_ml"]
-    print("green: ", greenml)
-    print("red: ", redml)
-    print("blue: ", blueml)
+    print("green ml in inv: ", greenml)
+    print("red ml in inv: ", redml)
+    print("blue ml in inv: ", blueml)
+
+    totalcost = 0  # hold cost of the unique potion based on the mix
 
     if greenml:
+        totalcost += 30
         num_green = int(greenml/100)
         plan.append({
             "potion_type": [0, 100, 0, 0],
             "quantity": num_green
         })
+
+
     
     if redml:
+        totalcost += 30
         num_red = int(redml/100)
         plan.append({
             "potion_type": [100, 0, 0, 0],
@@ -85,6 +91,7 @@ def get_bottle_plan():
         })
 
     if blueml:
+        totalcost += 50
         num_blue = int(blueml/100)
         plan.append({
             "potion_type": [0, 0, 100, 0],
