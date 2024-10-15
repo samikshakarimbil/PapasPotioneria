@@ -79,7 +79,7 @@ def get_bottle_plan():
         num_green = int(greenml/100)
         if num_green > capacity:
             num_green = capacity
-            capacity = 0
+        capacity = capacity - num_green
         plan.append({
             "potion_type": [0, 100, 0, 0],
             "quantity": num_green
@@ -92,7 +92,7 @@ def get_bottle_plan():
         num_red = int(redml/100)
         if num_red > capacity:
             num_red = capacity
-            capacity = 0
+        capacity = capacity - num_red
         plan.append({
             "potion_type": [100, 0, 0, 0],
             "quantity": num_red
@@ -103,7 +103,7 @@ def get_bottle_plan():
         num_blue = int(blueml/100)
         if num_blue > capacity:
             num_blue = capacity
-            capacity = 0
+        capacity = capacity - num_blue
         plan.append({
             "potion_type": [0, 0, 100, 0],
             "quantity": num_blue

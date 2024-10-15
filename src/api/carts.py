@@ -113,19 +113,31 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     print("Cart id: ", cart_id)
 
     with db.engine.begin() as connection:
-        result=connection.execute(sqlalchemy.text("SELECT id FROM carts WHERE id = :cart_id"),
+        result = connection.execute(sqlalchemy.text("SELECT id FROM carts WHERE id = :cart_id"),
                                   {"cart_id": cart_id}).mappings()
         result = result.fetchone()
+
+        # potion = connection.execute(sqlalchemy.text("SELECT sku, id FROM potions WHERE sku = :sku"),
+        #                    {"sku": item_sku}).mappings()
+        # potion = potion.fetchone()
 
         if not result:
             return {"success": False}
         
         print("Result: ", result)
         
+        # potion_id = potion["id"]
         qty = cart_item.quantity
         print("Quantity: ", qty)
         print("SKU: ", item_sku)
 
+        # new logic
+        # connection.execute(sqlalchemy.text("INSERT INTO cart_items (cart_id, quantity, potion_id) \
+        #                                    VALUES (:cart_id, :qty, :potion_id)),
+        #                    {"qty": qty, "cart_id": cart_id, "potion_id": potion_id})
+        
+
+        # old logic
         if item_sku == "GREEN_POTION":
             connection.execute(sqlalchemy.text("UPDATE carts \
                                            SET num_green = num_green + :qty \
@@ -167,6 +179,12 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         cart = cart.fetchone()
 
         if cart:
+
+            # connection.execute(sqlalchemy.text("SELECT * FROM carts WHERE id = :cart_id"),
+            #                     {"cart_id": cart_id}).mappings()
+
+            # old logic 
+
             print(cart_id)
             green_purchased = cart["num_green"]
             red_purchased =  cart["num_red"]
@@ -180,6 +198,11 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                                             num_red_potions = num_red_potions - :red, \
                                             num_blue_potions = num_blue_potions - :blue"),
                            {"pay": gold_paid, "green": green_purchased, "red": red_purchased, "blue": blue_purchased})
+            
+            # connection.execute(sqlalchemy.text("UPDATE potions \
+            #                                SET inventory = inventory - :qty \
+            #                                WHERE id = :potion_id"),
+            #                {"qty": qty, "potion_id": potion_id})
             
             return {
                 "total_potions_bought": total,
