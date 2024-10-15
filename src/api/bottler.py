@@ -59,7 +59,7 @@ def get_bottle_plan():
     # Expressed in integers from 1 to 100 that must sum up to 100.
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_red_ml, num_blue_ml FROM global_inventory")).mappings()
+        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
         result = result.fetchone()
 
     plan = []
@@ -69,12 +69,17 @@ def get_bottle_plan():
     print("green ml in inv: ", greenml)
     print("red ml in inv: ", redml)
     print("blue ml in inv: ", blueml)
+    total_potions = result["num_green_potions"] + result["num_red_potions"] + result["num_blue_potions"]
+    capacity = 50 - total_potions
 
     totalcost = 0  # hold cost of the unique potion based on the mix
 
     if greenml:
         totalcost += 30
         num_green = int(greenml/100)
+        if num_green > capacity:
+            num_green = capacity
+            capacity = 0
         plan.append({
             "potion_type": [0, 100, 0, 0],
             "quantity": num_green
@@ -85,6 +90,9 @@ def get_bottle_plan():
     if redml:
         totalcost += 30
         num_red = int(redml/100)
+        if num_red > capacity:
+            num_red = capacity
+            capacity = 0
         plan.append({
             "potion_type": [100, 0, 0, 0],
             "quantity": num_red
@@ -93,6 +101,9 @@ def get_bottle_plan():
     if blueml:
         totalcost += 50
         num_blue = int(blueml/100)
+        if num_blue > capacity:
+            num_blue = capacity
+            capacity = 0
         plan.append({
             "potion_type": [0, 0, 100, 0],
             "quantity": num_blue
