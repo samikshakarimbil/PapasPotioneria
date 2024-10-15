@@ -90,24 +90,24 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     blueptns = int(result["num_blue_potions"])
     gold = int(result["gold"])
 
-    # if(redml < greenml and redml < blueml):
-    #     least_ml = 0
+    if(redml <= greenml and redml <= blueml):
+        least_ml = 0
     least_ml = 1
-    if(greenml < redml and greenml < blueml):
+    if(greenml <= redml and greenml <= blueml):
         least_ml = 1
-    elif(blueml < greenml and blueml < redml):
+    elif(blueml <= greenml and blueml <= redml):
         least_ml = 2
     print("Red ml: ", redml)
     print("Green ml: ", greenml)
     print("Blue ml: ", blueml)
     print("Least ml: ", least_ml)
 
-    # if(redptns < greenptns and redptns < blueptns):
-    #     least_potions = 0
+    if(redptns <= greenptns and redptns <= blueptns):
+        least_potions = 0
     least_potions = 1
-    if(greenptns < redptns and greenptns < blueptns):
+    if(greenptns <= redptns and greenptns <= blueptns):
         least_potions = 1
-    elif(blueptns < greenml and blueptns < redptns):
+    elif(blueptns <= greenml and blueptns <= redptns):
         least_potions = 2
     print("Red potions: ", redptns)
     print("Green potions: ", greenptns)
@@ -117,25 +117,25 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     for barrel in wholesale_catalog:
         total = 0
         bp = barrel.price
-        # if barrel.potion_type == [1, 0, 0, 0]:
-        #     if least_ml == 0 and not bought: 
-        #         if least_potions != 0:
-        #             if gold >= bp:
-        #                 print("buying red barrel because least ml")
-        #                 total += bp
-        #                 sku = barrel.sku
-        #                 bought = True
-        #         else:
-        #             least_potions = min(greenptns, blueptns)
+        if barrel.potion_type == [1, 0, 0, 0]:
+            if least_ml == 0 and not bought: 
+                if least_potions != 0:
+                    if gold >= bp:
+                        print("buying red barrel because least ml")
+                        total += bp
+                        sku = barrel.sku
+                        bought = True
+                else:
+                    least_potions = min(greenptns, blueptns)
 
-        #     if least_potions == 0 and not bought2:
-        #         if gold >= bp:
-        #             print("buying red barrel because least potions")
-        #             total += bp
-        #             sku2 = barrel.sku
-        #             bought2 = True
+            if least_potions == 0 and not bought2:
+                if gold >= bp:
+                    print("buying red barrel because least potions")
+                    total += bp
+                    sku2 = barrel.sku
+                    bought2 = True
 
-        if barrel.potion_type == [0, 1, 0, 0]:
+        elif barrel.potion_type == [0, 1, 0, 0]:
             if least_ml == 1 and not bought:
                 if least_potions != 1:
                     if gold >= bp:
