@@ -126,7 +126,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         sku = barrel.sku
                         bought = True
                 else:
-                    least_potions = min(greenptns, blueptns)
+                    if greenptns < blueptns:
+                        least_potions = 1
+                    else:
+                        least_potions = 2
 
             if least_potions == 0 and not bought2:
                 if gold >= bp:
@@ -144,7 +147,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         sku = barrel.sku
                         bought = True
                 else:
-                    least_potions = min(redptns, blueptns)
+                    if redptns < blueptns:
+                        least_potions = 0
+                    else:
+                        least_potions = 2
 
             if least_potions == 1 and not bought2:
                 if gold >= bp:
@@ -162,7 +168,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         sku = barrel.sku
                         bought = True
                 else:
-                    least_potions = min(greenptns, redptns)
+                    if redptns < greenptns:
+                        least_potions = 0
+                    else:
+                        least_potions = 1
 
             if least_potions == 2 and not bought2:
                 if gold >= bp:
