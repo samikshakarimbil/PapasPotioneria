@@ -75,17 +75,17 @@ def get_bottle_plan():
     # green potion to add.
     # Expressed in integers from 1 to 100 that must sum up to 100.
     plan = []
+    capacity = 50
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
         result = result.fetchone()
         sum = connection.execute(sqlalchemy.text("SELECT SUM(inventory) FROM potions")).mappings()
         sum = sum.fetchone()
-        if not sum:
-            return plan
         
         print("sum: ", sum)
-        capacity = 50 - sum["sum"]
+        if (sum["sum"]):
+            capacity-= sum["sum"]
 
     greenml = result["num_green_ml"]
     redml = result["num_red_ml"]
@@ -94,54 +94,55 @@ def get_bottle_plan():
 
     total_ml = greenml + redml + blueml + darkml
     print("Total ml in inv: ", total_ml)
+    if total_ml:
 
-    red_proportion = int((redml / total_ml) * 100)
-    green_proportion = int((greenml / total_ml) * 100)
-    blue_proportion = int((blueml / total_ml) * 100)
-    dark_proportion = int((darkml / total_ml) * 100)
-    leftover = 100 - (red_proportion + green_proportion + blue_proportion + dark_proportion)
+        red_proportion = int((redml / total_ml) * 100)
+        green_proportion = int((greenml / total_ml) * 100)
+        blue_proportion = int((blueml / total_ml) * 100)
+        dark_proportion = int((darkml / total_ml) * 100)
+        leftover = 100 - (red_proportion + green_proportion + blue_proportion + dark_proportion)
 
-    amount = (min(redml, greenml, blueml, darkml)) // min(red_proportion, green_proportion, blue_proportion, dark_proportion)
-    max_color = max(red_proportion, green_proportion, blue_proportion, dark_proportion)
-    print("Amount: ", amount)
+        amount = (min(redml, greenml, blueml, darkml)) // min(red_proportion, green_proportion, blue_proportion, dark_proportion)
+        max_color = max(red_proportion, green_proportion, blue_proportion, dark_proportion)
+        print("Amount: ", amount)
 
-    new_proportion = max_color + leftover
-    changed = False
-    if max_color == red_proportion:
-        red_proportion += leftover
-        if (new_proportion * amount) <= redml:  
-            changed = True
-        print(("New red proportion: ", red_proportion))
-    
-    elif max_color == green_proportion:
-        green_proportion += leftover
-        if (new_proportion * amount) <= greenml: 
-            changed = True
-        print(("New green proportion: ", green_proportion))
-    
-    elif max_color == blue_proportion:
-        blue_proportion += leftover
-        if (new_proportion * amount) <= blueml:
-            changed = True
-        print(("New blue proportion: ", blue_proportion))
+        new_proportion = max_color + leftover
+        changed = False
+        if max_color == red_proportion:
+            red_proportion += leftover
+            if (new_proportion * amount) <= redml:  
+                changed = True
+            print(("New red proportion: ", red_proportion))
+        
+        elif max_color == green_proportion:
+            green_proportion += leftover
+            if (new_proportion * amount) <= greenml: 
+                changed = True
+            print(("New green proportion: ", green_proportion))
+        
+        elif max_color == blue_proportion:
+            blue_proportion += leftover
+            if (new_proportion * amount) <= blueml:
+                changed = True
+            print(("New blue proportion: ", blue_proportion))
 
-    else:
-        dark_proportion += leftover
-        if (new_proportion * amount) <= darkml:
-            changed = True
-        print(("New dark proportion: ", dark_proportion))
+        else:
+            dark_proportion += leftover
+            if (new_proportion * amount) <= darkml:
+                changed = True
+            print(("New dark proportion: ", dark_proportion))
 
-    if not changed:
-        amount -= 1
-    
-    print("Amount: ", amount)
-    if amount:
-        if capacity < amount:
-            amount = capacity
-        plan.append({
-            "potion_type": [red_proportion, green_proportion, blue_proportion, dark_proportion],
-            "quantity": amount
-        })
+        if not changed:
+            amount -= 1
+        
+        print("Amount: ", amount)
+        if amount:
+            if capacity < amount:
+                amount = capacity
+            plan.append({
+                "potion_type": [red_proportion, green_proportion, blue_proportion, dark_proportion],
+                "quantity": amount
+            })
 
     print("Bottle plan: ", plan)
     return plan
