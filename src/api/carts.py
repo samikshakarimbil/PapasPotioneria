@@ -140,43 +140,43 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
-    total: 0
     with db.engine.begin() as connection:
-        inv = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
-        inv = inv.fetchone()
-
-        cart = connection.execute(sqlalchemy.text("SELECT * FROM cart_items WHERE cart_id = :cart_id"),
+        total_qty = connection.execute(sqlalchemy.text("SELECT SUM(quantity) FROM cart_items WHERE cart_id = :cart_id"),
                                 {"cart_id": cart_id}).mappings()
-        cart = cart.fetchall()
+        total_qty = total_qty.fetchone()["sum"]
 
-        if cart:
+        potions = connection.execute(sqlalchemy.text("SELECT potion_id, quantity FROM cart_items WHERE cart_id = :cart_id"),
+                                {"cart_id": cart_id}).mappings()
+        potions = potions.fetchall()
 
-            # connection.execute(sqlalchemy.text("SELECT * FROM carts WHERE id = :cart_id"),
-            #                     {"cart_id": cart_id}).mappings()
+        print("Cart id: ", cart_id)
+        print("Total: ", total_qty)
+        print("Potions: ", potions)
 
-            # old logic 
+        if total_qty:
+            gold_paid = 0
+            for potion in potions:
+                qty = potion["quantity"]
+                id = potion["potion_id"]
+                price = connection.execute(sqlalchemy.text("SELECT price FROM potions WHERE id = :id"),
+                                {"id": id}).mappings()
+                price = price.fetchone()
+                gold_paid += price["price"] * qty
 
-            print(cart_id)
-            green_purchased = cart["num_green"]
-            red_purchased =  cart["num_red"]
-            blue_purchased = cart["num_blue"]
-            total = green_purchased + red_purchased + blue_purchased
-            gold_paid = green_purchased*green_price + red_purchased*red_price + blue_purchased*blue_price
+                connection.execute(sqlalchemy.text("UPDATE potions \
+                                                   SET inventory = inventory - :qty \
+                                                   WHERE id = :potion_id"),
+                                                   {"qty": qty, "potion_id": id})
+             
         
             connection.execute(sqlalchemy.text("UPDATE global_inventory \
-                                           SET gold = gold + :pay, \
-                                            num_green_potions = num_green_potions - :green, \
-                                            num_red_potions = num_red_potions - :red, \
-                                            num_blue_potions = num_blue_potions - :blue"),
-                           {"pay": gold_paid, "green": green_purchased, "red": red_purchased, "blue": blue_purchased})
+                                               SET gold = gold + :pay"),
+                                               {"pay": gold_paid,})
             
-            # connection.execute(sqlalchemy.text("UPDATE potions \
-            #                                SET inventory = inventory - :qty \
-            #                                WHERE id = :potion_id"),
-            #                {"qty": qty, "potion_id": potion_id})
+            
             
             return {
-                "total_potions_bought": total,
+                "total_potions_bought": total_qty,
                 "total_gold_paid": gold_paid
                 }
         
