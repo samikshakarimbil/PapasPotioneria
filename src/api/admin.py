@@ -24,8 +24,8 @@ def reset():
                                            num_blue_ml = 0, \
                                            num_dark_ml = 0, \
                                            gold = 100"))
+        connection.execute(sqlalchemy.text("DELETE from cart_items"))
         connection.execute(sqlalchemy.text("DELETE from carts"))
         connection.execute(sqlalchemy.text("DELETE from potions"))
-        connection.execute(sqlalchemy.text("DELETE from cart_items"))
     return "OK"
 
