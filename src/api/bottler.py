@@ -18,19 +18,22 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
-
+    sku = ""
     green_potions, red_potions, blue_potions = 0, 0, 0
     green_ml, red_ml, blue_ml = 0, 0, 0
+
+    # Price per ml (ppm) for each colour: change later if prices too low/high
+    green_ppm = 1
+    red_ppm = 1
+    blue_ppm = 2
+    dark_ppm = 3
+
     for potion in potions_delivered:
-        if potion.potion_type == [100, 0, 0, 0]:
-            red_potions += potion.quantity
-            red_ml += red_potions * 100
-        if potion.potion_type == [0, 100, 0, 0]:
-            green_potions += potion.quantity
-            green_ml += green_potions * 100
-        if potion.potion_type == [0, 0, 100, 0]:
-            blue_potions += potion.quantity
-            blue_ml += blue_potions * 100
+        type = potion.potion_type
+        red_ml = type[0] * potion.quantity
+        green_ml = type[1] * potion.quantity
+        blue_ml = type[2] * potion.quantity
+        
 
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text(
@@ -43,8 +46,31 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 num_blue_ml = num_blue_ml - :blueml"),
                 {"gp": green_potions, "rp": red_potions, "bp": blue_potions, \
                  "greenml": green_ml, "redml": red_ml, "blueml": blue_ml})
+
+
+        for potion in potions_delivered:
+            type = potion.potion_type
+            price = red_ppm*type[0] + green_ppm*type[1] + blue_ppm*type[2] + dark_ppm*type[3]
+            sku = "RED" + str(type[0]) + "_GREEN" + str(type[1]) + "_BLUE" + str(type[2]) + "_DARK" + str(type[3])
+            result = connection.execute(sqlalchemy.text("SELECT sku FROM potions WHERE sku = :sku"),
+                           {"sku": sku}).mappings()
+            result = result.fetchall()
+                        
+            if not result:
+                connection.execute(sqlalchemy.text("INSERT INTO potions (sku, red_amt, green_amt, blue_amt, dark_amt, inventory, price) \
+                                               VALUES (:sku, :red_amt, :green_amt, :blue_amt, :dark_amt, :inventory, :price)"),
+                                            {"sku": sku, "red_amt": type[0], "green_amt": type[1], 
+                                             "blue_amt": type[2], "dark_amt": type[3],
+                                             "inventory": potion.quantity, "price": price})
+            else:
+                connection.execute(sqlalchemy.text("UPDATE potions SET inventory = inventory + :qty WHERE sku = :sku"),
+                                                   {"sku": sku, "qty": potion.quantity})
+                
+            # connection.execute(sqlalchemy.text("UPDATE global_inventory \
+            #                                    SET num_potions = num_potions + :num"))
+                
         
-        print(f"potions delievered: {potions_delivered} order_id: {order_id}")
+        print(f"potions delivered: {potions_delivered} order_id: {order_id}")
     
     return "OK"
 
@@ -66,50 +92,65 @@ def get_bottle_plan():
     greenml = result["num_green_ml"]
     redml = result["num_red_ml"]
     blueml = result["num_blue_ml"]
-    print("green ml in inv: ", greenml)
-    print("red ml in inv: ", redml)
-    print("blue ml in inv: ", blueml)
-    total_potions = result["num_green_potions"] + result["num_red_potions"] + result["num_blue_potions"]
+    print("Red ml in inv: ", redml)
+    print("Green ml in inv: ", greenml)
+    print("Blue ml in inv: ", blueml)
+
+    greenptns = int(result["num_green_potions"])
+    redptns = int(result["num_red_potions"])
+    blueptns = int(result["num_blue_potions"])
+
+    total_ml = greenml + redml + blueml
+    total_potions = redptns + greenptns + blueptns
     capacity = 50 - total_potions
+    print("Total ml in inv: ", total_ml)
 
-    totalcost = 0  # hold cost of the unique potion based on the mix
+    red_proportion = int((redml / total_ml) * 100)
+    green_proportion = int((greenml / total_ml) * 100)
+    blue_proportion = int((blueml / total_ml) * 100)
+    leftover = 100 - (red_proportion + green_proportion + blue_proportion)
+    print("Red proportion: ", red_proportion)
+    print("Green proportion: ", green_proportion)
+    print("Blue proportion: ", blue_proportion)
+    print("Leftover: ", leftover)
 
-    if greenml:
-        totalcost += 30
-        num_green = int(greenml/100)
-        if num_green > capacity:
-            num_green = capacity
-        capacity = capacity - num_green
-        plan.append({
-            "potion_type": [0, 100, 0, 0],
-            "quantity": num_green
-        })
+    amount = (min(redml, greenml, blueml)) // min(red_proportion, green_proportion, blue_proportion)
+    max_color = max(red_proportion, green_proportion, blue_proportion)
+    print("Amount: ", amount)
 
-
+    new_proportion = max_color + leftover
+    changed = False
+    if max_color == red_proportion:
+        red_proportion += leftover
+        if (new_proportion * amount) <= redml:  
+            changed = True
+        print(("New red proportion: ", red_proportion))
     
-    if redml:
-        totalcost += 30
-        num_red = int(redml/100)
-        if num_red > capacity:
-            num_red = capacity
-        capacity = capacity - num_red
+    elif max_color == green_proportion:
+        green_proportion += leftover
+        if (new_proportion * amount) <= greenml: 
+            changed = True
+        print(("New green proportion: ", green_proportion))
+    
+    elif max_color == blue_proportion:
+        blue_proportion += leftover
+        if (new_proportion * amount) <= redml:
+            changed = True
+        print(("New blue proportion: ", blue_proportion))
+
+    if not changed:
+        amount -= 1
+    
+    print("Amount: ", amount)
+    if amount:
+        if capacity < amount:
+            amount = capacity
         plan.append({
-            "potion_type": [100, 0, 0, 0],
-            "quantity": num_red
+            "potion_type": [red_proportion, green_proportion, blue_proportion, 0],
+            "quantity": amount
         })
 
-    if blueml:
-        totalcost += 50
-        num_blue = int(blueml/100)
-        if num_blue > capacity:
-            num_blue = capacity
-        capacity = capacity - num_blue
-        plan.append({
-            "potion_type": [0, 0, 100, 0],
-            "quantity": num_blue
-        })
-
-    print("plan: ", plan)
+    print("Bottle plan: ", plan)
     return plan
 
 if __name__ == "__main__":

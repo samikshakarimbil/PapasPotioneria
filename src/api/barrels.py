@@ -90,6 +90,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     blueptns = int(result["num_blue_potions"])
     gold = int(result["gold"])
 
+    totalml = greenml + redml + blueml
+
     if(redml <= greenml and redml <= blueml):
         least_ml = 0
     least_ml = 1
@@ -120,9 +122,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         if barrel.potion_type == [1, 0, 0, 0]:
             if least_ml == 0 and not bought: 
                 if least_potions != 0:
-                    if gold >= bp:
+                    if gold >= bp and ((totalml + barrel.ml_per_barrel) <= 10000):
                         print("buying red barrel because least ml")
                         total += bp
+                        totalml += barrel.ml_per_barrel
                         sku = barrel.sku
                         bought = True
                 else:
@@ -132,18 +135,20 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         least_potions = 2
 
             if least_potions == 0 and not bought2:
-                if gold >= bp:
+                if gold >= bp and ((totalml + barrel.ml_per_barrel) <= 10000):
                     print("buying red barrel because least potions")
                     total += bp
+                    totalml += barrel.ml_per_barrel
                     sku2 = barrel.sku
                     bought2 = True
 
         elif barrel.potion_type == [0, 1, 0, 0]:
             if least_ml == 1 and not bought:
                 if least_potions != 1:
-                    if gold >= bp:
+                    if gold >= bp and ((totalml + barrel.ml_per_barrel) <= 10000):
                         print("buying green barrel because least ml")
                         total += bp
+                        totalml += barrel.ml_per_barrel
                         sku = barrel.sku
                         bought = True
                 else:
@@ -153,18 +158,20 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         least_potions = 2
 
             if least_potions == 1 and not bought2:
-                if gold >= bp:
+                if gold >= bp and ((totalml + barrel.ml_per_barrel) <= 10000):
                     print("buying green barrel because least potions")
                     total += bp
+                    totalml += barrel.ml_per_barrel
                     sku2 = barrel.sku
                     bought2 = True
 
         elif barrel.potion_type == [0, 0, 1, 0]:
             if least_ml == 2 and not bought:
                 if least_potions != 2:
-                    if gold >= bp:
+                    if gold >= bp and ((totalml + barrel.ml_per_barrel) <= 10000):
                         print("buying blue barrel because least ml")
                         total += bp
+                        totalml += barrel.ml_per_barrel
                         sku = barrel.sku
                         bought = True
                 else:
@@ -174,9 +181,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         least_potions = 1
 
             if least_potions == 2 and not bought2:
-                if gold >= bp:
+                if gold >= bp and ((totalml + barrel.ml_per_barrel) <= 10000):
                     print("buying blue barrel because least potions")
                     total += bp
+                    totalml += barrel.ml_per_barrel
                     sku2 = barrel.sku
                     bought2 = True
 
