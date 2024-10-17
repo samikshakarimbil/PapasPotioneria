@@ -13,42 +13,23 @@ def get_catalog():
     """
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
-        result = result.fetchone()
+        result = connection.execute(sqlalchemy.text("SELECT * FROM potions LIMIT 6")).mappings()
+        result = result.fetchall()
         
     catalog = []
-    gp = result["num_green_potions"]
-    rp = result["num_red_potions"]
-    bp = result["num_blue_potions"]
-    if gp:
+    print ("result: ", result)
+
+    # new logic
+    for potion in result:
+        type = [potion["red_amt"], potion["green_amt"], potion["blue_amt"], potion["dark_amt"]]
         catalog.append(
             {
-                    "sku": "GREEN_POTION",
-                    "name": "green potion",
-                    "quantity": gp,
-                    "price": 50,
-                    "potion_type": [0, 100, 0, 0],
-                }
-        )
-    if rp:
-        catalog.append(
-            {
-                    "sku": "RED_POTION",
-                    "name": "red potion",
-                    "quantity": rp,
-                    "price": 50,
-                    "potion_type": [100, 0, 0, 0],
-                }
-        )
-    if bp:
-        catalog.append(
-            {
-                    "sku": "BLUE_POTION",
-                    "name": "blue potion",
-                    "quantity": bp,
-                    "price": 70,
-                    "potion_type": [0, 0, 100, 0],
-                }
+                "sku": potion["sku"],
+                "name": potion["sku"],
+                "quantity": potion["inventory"],
+                "price": potion["price"],
+                "potion_type": type
+            }
         )
 
     return catalog

@@ -93,8 +93,8 @@ def create_cart(new_cart: Customer):
     """ """
 
     with db.engine.begin() as connection:
-        id = connection.execute(sqlalchemy.text("INSERT INTO carts (customer) VALUES (:new_cart) RETURNING id"),
-                            {"new_cart": new_cart.customer_name})
+        id = connection.execute(sqlalchemy.text("INSERT INTO carts (customer, class) VALUES (:new_cart, :class) RETURNING id"),
+                            {"new_cart": new_cart.customer_name, "class": new_cart.character_class})
        
     id = id.fetchone()
     print("id: ", id[0])
@@ -109,52 +109,26 @@ class CartItem(BaseModel):
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
 
-    print("Setting item quantity")
     print("Cart id: ", cart_id)
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT id FROM carts WHERE id = :cart_id"),
                                   {"cart_id": cart_id}).mappings()
         result = result.fetchone()
-
-        # potion = connection.execute(sqlalchemy.text("SELECT sku, id FROM potions WHERE sku = :sku"),
-        #                    {"sku": item_sku}).mappings()
-        # potion = potion.fetchone()
-
         if not result:
             return {"success": False}
-        
-        print("Result: ", result)
-        
-        # potion_id = potion["id"]
+
+        potion = connection.execute(sqlalchemy.text("SELECT sku, id FROM potions WHERE sku = :sku"),
+                           {"sku": item_sku}).mappings()
+        potion = potion.fetchone()
+
+        pid = potion["id"]
         qty = cart_item.quantity
-        print("Quantity: ", qty)
-        print("SKU: ", item_sku)
 
         # new logic
-        # connection.execute(sqlalchemy.text("INSERT INTO cart_items (cart_id, quantity, potion_id) \
-        #                                    VALUES (:cart_id, :qty, :potion_id)),
-        #                    {"qty": qty, "cart_id": cart_id, "potion_id": potion_id})
-        
-
-        # old logic
-        if item_sku == "GREEN_POTION":
-            connection.execute(sqlalchemy.text("UPDATE carts \
-                                           SET num_green = num_green + :qty \
-                                           WHERE id = :cart_id"),
-                           {"qty": qty, "cart_id": cart_id})
-            
-        elif item_sku == "RED_POTION":
-            connection.execute(sqlalchemy.text("UPDATE carts \
-                                           SET num_red = num_red + :qty \
-                                           WHERE id = :cart_id"),
-                           {"qty": qty, "cart_id": cart_id})
-            
-        elif item_sku == "BLUE_POTION":
-            connection.execute(sqlalchemy.text("UPDATE carts \
-                                           SET num_blue = num_blue + :qty \
-                                           WHERE id = :cart_id"),
-                           {"qty": qty, "cart_id": cart_id})
+        connection.execute(sqlalchemy.text("INSERT INTO cart_items (cart_id, quantity, potion_id) \
+                                           VALUES (:cart_id, :qty, :potion_id)"),
+                                           {"cart_id": cart_id, "qty": qty, "potion_id": pid})
 
     return {"success": True}
 
@@ -166,17 +140,14 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
-    green_price = 50
-    red_price = 50
-    blue_price = 70
     total: 0
     with db.engine.begin() as connection:
         inv = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
         inv = inv.fetchone()
 
-        cart = connection.execute(sqlalchemy.text("SELECT * FROM carts WHERE id = :cart_id"),
+        cart = connection.execute(sqlalchemy.text("SELECT * FROM cart_items WHERE cart_id = :cart_id"),
                                 {"cart_id": cart_id}).mappings()
-        cart = cart.fetchone()
+        cart = cart.fetchall()
 
         if cart:
 
