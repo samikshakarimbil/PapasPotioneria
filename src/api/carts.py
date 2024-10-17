@@ -93,8 +93,8 @@ def create_cart(new_cart: Customer):
     """ """
 
     with db.engine.begin() as connection:
-        id = connection.execute(sqlalchemy.text("INSERT INTO carts (customer, class) VALUES (:new_cart, :class) RETURNING id"),
-                            {"new_cart": new_cart.customer_name, "class": new_cart.character_class})
+        id = connection.execute(sqlalchemy.text("INSERT INTO carts (customer, class, level) VALUES (:new_cart, :class, :level) RETURNING id"),
+                            {"new_cart": new_cart.customer_name, "class": new_cart.character_class, "level": new_cart.level})
        
     id = id.fetchone()
     print("id: ", id[0])
