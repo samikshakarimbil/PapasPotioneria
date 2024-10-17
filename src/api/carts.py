@@ -118,14 +118,13 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         if not result:
             return {"success": False}
 
-        potion = connection.execute(sqlalchemy.text("SELECT sku, id FROM potions WHERE sku = :sku"),
+        potion = connection.execute(sqlalchemy.text("SELECT id FROM potions WHERE sku = :sku"),
                            {"sku": item_sku}).mappings()
         potion = potion.fetchone()
 
         pid = potion["id"]
         qty = cart_item.quantity
 
-        # new logic
         connection.execute(sqlalchemy.text("INSERT INTO cart_items (cart_id, quantity, potion_id) \
                                            VALUES (:cart_id, :qty, :potion_id)"),
                                            {"cart_id": cart_id, "qty": qty, "potion_id": pid})

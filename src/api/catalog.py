@@ -19,7 +19,6 @@ def get_catalog():
     catalog = []
     print ("result: ", result)
 
-    # new logic
     for potion in result:
         type = [potion["red_amt"], potion["green_amt"], potion["blue_amt"], potion["dark_amt"]]
         catalog.append(
