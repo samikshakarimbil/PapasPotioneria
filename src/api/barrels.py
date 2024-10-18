@@ -85,6 +85,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         total = 0
         bp = barrel.price
         ml = barrel.ml_per_barrel
+        print("current least: ", least_ml)
         
         if barrel.potion_type == [0, 0, 0, 1] and darkml < 1000:
             if gold >= bp:
@@ -105,11 +106,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         "quantity": 1
                     })
                     redml += ml
-                    if(greenml < blueml):
-                        least_ml = 1
-                    else:
-                        least_ml = 2
-
+                    least_ml = 1 if greenml < blueml else 2
+                
         elif barrel.potion_type == [0, 1, 0, 0] and least_ml == 1:
                 if gold >= bp and (capacity > 0):
                     print("Buying green barrel")
@@ -120,10 +118,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         "quantity": 1
                     })
                     greenml += ml
-                    if(redml < blueml):
-                        least_ml = 0
-                    else:
-                        least_ml = 2
+                    least_ml = 0 if redml < blueml else 2
 
         elif barrel.potion_type == [0, 0, 1, 0] and least_ml == 2:
                 if gold >= bp and (capacity > 0):
@@ -135,13 +130,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         "quantity": 1
                     })
                     blueml += ml
-                    if(greenml < redml):
-                        least_ml = 1
-                    else:
-                        least_ml = 0
+                    least_ml = 1 if greenml < redml else 0
 
         gold -= total
 
-    print("Barrels total price: ", total)
-   
+    print("Barrel plan: ", plan)
     return plan
