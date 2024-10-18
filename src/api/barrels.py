@@ -55,15 +55,13 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
 
-    sku = ""
     bp = 0
     plan = []
-    bought = False
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
         result = result.fetchone()
-    print(result)
+    print("Result: ", result)
 
     greenml = int(result["num_green_ml"])
     redml = int(result["num_red_ml"])
@@ -72,6 +70,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     gold = int(result["gold"])
 
     totalml = greenml + redml + blueml + darkml
+    capacity = 10000 - totalml
 
     if(redml <= greenml and redml <= blueml):
         least_ml = 0
@@ -81,63 +80,68 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         least_ml = 2
 
     print("Least ml: ", least_ml)
-    # ability = 1
+    
     for barrel in wholesale_catalog:
         total = 0
         bp = barrel.price
-       #  qty = barrel.quantity
-       #  ability = gold // bp
+        ml = barrel.ml_per_barrel
         
-
         if barrel.potion_type == [0, 0, 0, 1] and darkml < 1000:
             if gold >= bp:
-                # ability = ability if ability <= qty else qty
                 plan.append({
                     "sku": barrel.sku,
                     "quantity": 1
-                    })          
-                totalml += barrel.ml_per_barrel
+                    })      
+                capacity -= ml
                 gold -= bp
                 
-        if barrel.potion_type == [1, 0, 0, 0]:
-            if least_ml == 0: 
-                if gold >= bp and ((totalml + barrel.ml_per_barrel) <= 10000):
+        if barrel.potion_type == [1, 0, 0, 0] and least_ml == 0:
+                if gold >= bp and (capacity > 0):
                     print("Buying red barrel")
                     total += bp
-                    totalml += barrel.ml_per_barrel
-                    sku = barrel.sku
-                    # ability = ability if ability <= qty else qty
-                    bought = True
+                    capacity -= ml
+                    plan.append({
+                        "sku": barrel.sku,
+                        "quantity": 1
+                    })
+                    redml += ml
+                    if(greenml < blueml):
+                        least_ml = 1
+                    else:
+                        least_ml = 2
 
-        elif barrel.potion_type == [0, 1, 0, 0]:
-            if least_ml == 1:
-                print("bp ", bp)
-                if gold >= bp and ((totalml + barrel.ml_per_barrel) <= 10000):
+        elif barrel.potion_type == [0, 1, 0, 0] and least_ml == 1:
+                if gold >= bp and (capacity > 0):
                     print("Buying green barrel")
                     total += bp
-                    totalml += barrel.ml_per_barrel
-                    sku = barrel.sku
-                    # ability = ability if ability <= qty else qty
-                    bought = True
+                    capacity -= ml
+                    plan.append({
+                        "sku": barrel.sku,
+                        "quantity": 1
+                    })
+                    greenml += ml
+                    if(redml < blueml):
+                        least_ml = 0
+                    else:
+                        least_ml = 2
 
-        elif barrel.potion_type == [0, 0, 1, 0]:
-            if least_ml == 2:
-                if gold >= bp and ((totalml + barrel.ml_per_barrel) <= 10000):
+        elif barrel.potion_type == [0, 0, 1, 0] and least_ml == 2:
+                if gold >= bp and (capacity > 0):
                     print("Buying blue barrel")
                     total += bp
-                    totalml += barrel.ml_per_barrel
-                    sku = barrel.sku
-                    # ability = ability if ability <= qty else qty
-                    bought = True
+                    capacity -= ml
+                    plan.append({
+                        "sku": barrel.sku,
+                        "quantity": 1
+                    })
+                    blueml += ml
+                    if(greenml < redml):
+                        least_ml = 1
+                    else:
+                        least_ml = 0
 
         gold -= total
 
-    print("barrel price: ", total)
-
-    if bought:
-        plan.append({
-            "sku": sku,
-            "quantity": 1
-        })
-    
+    print("Barrels total price: ", total)
+   
     return plan
