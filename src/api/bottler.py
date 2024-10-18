@@ -133,7 +133,6 @@ def get_bottle_plan():
 
         amount = (min(mlist)) // min(plist)
         max_color = max(plist)
-        print("Amount: ", amount)
 
         new_proportion = max_color + leftover
         change = False
@@ -166,11 +165,9 @@ def get_bottle_plan():
             print(("New dark proportion: ", dark_proportion))
 
         if change:
-            print("To change: ", tochange)
             while (amount * new_proportion) > tochange:
                 amount -= 1
         
-        print("Amount: ", amount)
         if amount:
             if capacity < amount:
                 amount = capacity

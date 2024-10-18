@@ -61,7 +61,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
         result = result.fetchone()
-    print("Result: ", result)
 
     greenml = int(result["num_green_ml"])
     redml = int(result["num_red_ml"])
@@ -85,7 +84,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         total = 0
         bp = barrel.price
         ml = barrel.ml_per_barrel
-        print("current least: ", least_ml)
         
         if barrel.potion_type == [0, 0, 0, 1] and darkml < 1000:
             if gold >= bp:
