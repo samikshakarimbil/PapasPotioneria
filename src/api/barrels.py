@@ -58,6 +58,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     sku = ""
     bp = 0
     plan = []
+    bought = False
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
@@ -79,12 +80,18 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     elif(blueml <= greenml and blueml <= redml):
         least_ml = 2
 
+    print("Least ml: ", least_ml)
+    # ability = 1
     for barrel in wholesale_catalog:
         total = 0
         bp = barrel.price
+       #  qty = barrel.quantity
+       #  ability = gold // bp
+        
 
         if barrel.potion_type == [0, 0, 0, 1] and darkml < 1000:
             if gold >= bp:
+                # ability = ability if ability <= qty else qty
                 plan.append({
                     "sku": barrel.sku,
                     "quantity": 1
@@ -99,15 +106,18 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     total += bp
                     totalml += barrel.ml_per_barrel
                     sku = barrel.sku
+                    # ability = ability if ability <= qty else qty
                     bought = True
 
         elif barrel.potion_type == [0, 1, 0, 0]:
             if least_ml == 1:
+                print("bp ", bp)
                 if gold >= bp and ((totalml + barrel.ml_per_barrel) <= 10000):
                     print("Buying green barrel")
                     total += bp
                     totalml += barrel.ml_per_barrel
                     sku = barrel.sku
+                    # ability = ability if ability <= qty else qty
                     bought = True
 
         elif barrel.potion_type == [0, 0, 1, 0]:
@@ -117,6 +127,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     total += bp
                     totalml += barrel.ml_per_barrel
                     sku = barrel.sku
+                    # ability = ability if ability <= qty else qty
                     bought = True
 
         gold -= total
