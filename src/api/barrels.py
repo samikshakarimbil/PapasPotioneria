@@ -53,7 +53,9 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
-    print(wholesale_catalog)
+    sorted_catalog = sorted(wholesale_catalog, key=lambda x: x.price, reverse=True)
+    print("Sorted catalog: ", sorted_catalog)
+
 
     bp = 0
     plan = []
@@ -80,7 +82,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     print("Least ml: ", least_ml)
     
-    for barrel in wholesale_catalog:
+    for barrel in sorted_catalog:
         total = 0
         bp = barrel.price
         ml = barrel.ml_per_barrel
