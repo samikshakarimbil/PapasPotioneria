@@ -22,10 +22,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     green_ml, red_ml, blue_ml, dark_ml = 0, 0, 0, 0
 
     # Price per ml (ppm) for each colour: change later if prices too low/high
-    green_ppm = 1
-    red_ppm = 1
-    blue_ppm = 2
-    dark_ppm = 3       
+    green_ppm = 0.5
+    red_ppm = 0.5
+    blue_ppm = 1
+    dark_ppm = 2       
 
     with db.engine.begin() as connection:
         for potion in potions_delivered:
