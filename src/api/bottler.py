@@ -134,39 +134,40 @@ def get_bottle_plan():
         amount = (min(mlist)) // min(plist)
         max_color = max(plist)
 
-        new_proportion = max_color + leftover
-        change = False
-        if max_color == red_proportion:
-            red_proportion += leftover
-            if (new_proportion * amount) > redml:  
-                change = True
-                tochange = redml
-            print(("New red proportion: ", red_proportion))
-        
-        elif max_color == green_proportion:
-            green_proportion += leftover
-            if (new_proportion * amount) > greenml: 
-                change = True
-                tochange = greenml
-            print(("New green proportion: ", green_proportion))
-        
-        elif max_color == blue_proportion:
-            blue_proportion += leftover
-            if (new_proportion * amount) > blueml:
-                change = True
-                tochange = blueml
-            print(("New blue proportion: ", blue_proportion))
+        if leftover:
+            new_proportion = max_color + leftover
+            change = False
+            if max_color == red_proportion:
+                red_proportion += leftover
+                if (new_proportion * amount) > redml:  
+                    change = True
+                    tochange = redml
+                print(("New red proportion: ", red_proportion))
+            
+            elif max_color == green_proportion:
+                green_proportion += leftover
+                if (new_proportion * amount) > greenml: 
+                    change = True
+                    tochange = greenml
+                print(("New green proportion: ", green_proportion))
+            
+            elif max_color == blue_proportion:
+                blue_proportion += leftover
+                if (new_proportion * amount) > blueml:
+                    change = True
+                    tochange = blueml
+                print(("New blue proportion: ", blue_proportion))
 
-        else:
-            dark_proportion += leftover
-            if (new_proportion * amount) > darkml:
-                change = True
-                tochange = darkml
-            print(("New dark proportion: ", dark_proportion))
+            else:
+                dark_proportion += leftover
+                if (new_proportion * amount) > darkml:
+                    change = True
+                    tochange = darkml
+                print(("New dark proportion: ", dark_proportion))
 
-        if change:
-            while (amount * new_proportion) > tochange:
-                amount -= 1
+            if change:
+                while (amount * new_proportion) > tochange:
+                    amount -= 1
         
         if amount:
             if capacity < amount:

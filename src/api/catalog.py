@@ -20,15 +20,16 @@ def get_catalog():
     print ("result: ", result)
 
     for potion in result:
-        type = [potion["red_amt"], potion["green_amt"], potion["blue_amt"], potion["dark_amt"]]
-        catalog.append(
-            {
-                "sku": potion["sku"],
-                "name": potion["sku"],
-                "quantity": potion["inventory"],
-                "price": potion["price"],
-                "potion_type": type
-            }
-        )
+        if potion["inventory"] > 0:
+            type = [potion["red_amt"], potion["green_amt"], potion["blue_amt"], potion["dark_amt"]]
+            catalog.append(
+                {
+                    "sku": potion["sku"],
+                    "name": potion["sku"],
+                    "quantity": potion["inventory"],
+                    "price": potion["price"],
+                    "potion_type": type
+                }
+            )
 
     return catalog
