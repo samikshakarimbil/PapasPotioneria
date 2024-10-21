@@ -13,23 +13,22 @@ def get_catalog():
     """
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM potions LIMIT 6")).mappings()
+        result = connection.execute(sqlalchemy.text("SELECT * FROM potions WHERE inventory != 0 LIMIT 6")).mappings()
         result = result.fetchall()
         
     catalog = []
-    print ("result: ", result)
+    print ("Catalog: ", result)
 
     for potion in result:
-        if potion["inventory"] > 0:
-            type = [potion["red_amt"], potion["green_amt"], potion["blue_amt"], potion["dark_amt"]]
-            catalog.append(
-                {
-                    "sku": potion["sku"],
-                    "name": potion["sku"],
-                    "quantity": potion["inventory"],
-                    "price": potion["price"],
-                    "potion_type": type
-                }
-            )
+        type = [potion["red_amt"], potion["green_amt"], potion["blue_amt"], potion["dark_amt"]]
+        catalog.append(
+            {
+                "sku": potion["sku"],
+                "name": potion["sku"],
+                "quantity": potion["inventory"],
+                "price": potion["price"],
+                "potion_type": type
+            }
+        )
 
     return catalog
