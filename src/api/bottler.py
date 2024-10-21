@@ -31,10 +31,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         for potion in potions_delivered:
             type = potion.potion_type
             qty = potion.quantity
-            red_ml = type[0] * qty
-            green_ml = type[1] * qty
-            blue_ml = type[2] * qty
-            dark_ml = type[3] * qty
+            red_ml += type[0] * qty
+            green_ml += type[1] * qty
+            blue_ml += type[2] * qty
+            dark_ml += type[3] * qty
             price = red_ppm*type[0] + green_ppm*type[1] + blue_ppm*type[2] + dark_ppm*type[3]
             sku = "R" + str(type[0]) + "_G" + str(type[1]) + "_B" + str(type[2]) + "_D" + str(type[3])
 
