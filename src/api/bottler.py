@@ -94,7 +94,7 @@ def get_bottle_plan():
 
     total_ml = greenml + redml + blueml + darkml
     print("Total ml in inv: ", total_ml)
-    if total_ml >= 100:
+    if total_ml >= 100 and capacity > 0:
 
         red_proportion = int((redml / total_ml) * 100)
         green_proportion = int((greenml / total_ml) * 100)

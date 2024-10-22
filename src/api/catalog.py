@@ -13,7 +13,7 @@ def get_catalog():
     """
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM potions WHERE inventory != 0 LIMIT 6")).mappings()
+        result = connection.execute(sqlalchemy.text("SELECT * FROM potions WHERE inventory > 0 LIMIT 6")).mappings()
         result = result.fetchall()
         
     catalog = []
