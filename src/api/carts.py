@@ -97,8 +97,8 @@ def create_cart(new_cart: Customer):
                             {"new_cart": new_cart.customer_name, "class": new_cart.character_class, "level": new_cart.level})
        
     id = id.fetchone()
-    print("id: ", id[0])
-    return {"cart_id": int(id[0])}
+    print("Created cart  with id ", id.id)
+    return {"cart_id": int(id.id)}
 
 
 class CartItem(BaseModel):
@@ -109,7 +109,7 @@ class CartItem(BaseModel):
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
 
-    print("Cart id: ", cart_id)
+    print("Setting items for cart ", cart_id)
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT id FROM carts WHERE id = :cart_id"),
@@ -148,9 +148,9 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                                 {"cart_id": cart_id}).mappings()
         potions = potions.fetchall()
 
-        print("Cart id: ", cart_id)
-        print("Total: ", total_qty)
-        print("Potions: ", potions)
+        print("Checking out cart ", cart_id)
+        print("Total potions to check out: ", total_qty)
+        print("Potions being checked out: ", potions)
 
         if total_qty:
             gold_paid = 0

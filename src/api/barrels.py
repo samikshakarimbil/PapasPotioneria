@@ -45,7 +45,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
                                             {"total_greenml": total_green_ml, "total_redml": total_red_ml, 
                                              "total_blueml": total_blue_ml, "total_darkml": total_dark_ml,
                                               "total_price": total_price})
-        print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
+        print(f"Barrels delivered: {barrels_delivered}, Order_id: {order_id}")
 
     return "OK"
 

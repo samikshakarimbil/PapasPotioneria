@@ -17,7 +17,6 @@ def get_catalog():
         result = result.fetchall()
         
     catalog = []
-    print ("Catalog: ", result)
 
     for potion in result:
         type = [potion["red_amt"], potion["green_amt"], potion["blue_amt"], potion["dark_amt"]]
@@ -30,5 +29,7 @@ def get_catalog():
                 "potion_type": type
             }
         )
+
+    print ("Catalog: ", catalog)
 
     return catalog
