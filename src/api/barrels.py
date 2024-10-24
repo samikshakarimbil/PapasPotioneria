@@ -53,7 +53,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
-    sorted_catalog = sorted(wholesale_catalog, key=lambda x: x.price)
+    sorted_catalog = sorted(wholesale_catalog, key=lambda x: x.price, reverse=True)
     print("Sorted catalog: ", sorted_catalog)
 
     bp = 0

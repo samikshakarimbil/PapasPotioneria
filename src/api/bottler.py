@@ -88,7 +88,8 @@ def get_bottle_plan():
             capacity-= sum["sum"]
 
     # prevent bottling more than 20 potions at once
-    capacity = capacity if capacity < 20 else 20
+    # capacity = capacity if capacity < 20 else 20
+    capacity = min(capacity, 20)
 
     greenml = result["num_green_ml"]
     redml = result["num_red_ml"]
