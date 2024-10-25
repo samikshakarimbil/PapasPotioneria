@@ -90,9 +90,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print("Least ml: ", least_ml)
 
     for barrel in sorted_catalog:
-        if capacity > 0:
-            bp = barrel.price
-            ml = barrel.ml_per_barrel
+        bp = barrel.price
+        ml = barrel.ml_per_barrel
+
+        if capacity - ml > 0:
             
             if barrel.potion_type == [0, 0, 0, 1] and darkml < 5000:
                 if gold >= bp:
