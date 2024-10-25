@@ -98,8 +98,8 @@ def create_cart(new_cart: Customer):
                             {"new_cart": new_cart.customer_name, "class": new_cart.character_class, "level": new_cart.level}).mappings()
        
     id = id.fetchone()
-    print("Created cart  with id ", id.id)
-    return {"cart_id": int(id.id)}
+    print("Created cart  with id ", id["id"])
+    return {"cart_id": int(id["id"])}
 
 
 class CartItem(BaseModel):
