@@ -92,9 +92,10 @@ def post_visits(visit_id: int, customers: list[Customer]):
 def create_cart(new_cart: Customer):
     """ """
 
+
     with db.engine.begin() as connection:
         id = connection.execute(sqlalchemy.text("INSERT INTO carts (customer, class, level) VALUES (:new_cart, :class, :level) RETURNING id"),
-                            {"new_cart": new_cart.customer_name, "class": new_cart.character_class, "level": new_cart.level})
+                            {"new_cart": new_cart.customer_name, "class": new_cart.character_class, "level": new_cart.level}).mappings()
        
     id = id.fetchone()
     print("Created cart  with id ", id.id)
