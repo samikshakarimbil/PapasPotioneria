@@ -71,13 +71,13 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     darkml = result["num_dark_ml"]
     gold = result["gold"]
 
-    gold = gold - 100 if gold >= 100 else 0
+    #gold = gold - 100 if gold > 100 else gold  remove on resets
     print(f"Budget: {gold}")
 
     totalml = greenml + redml + blueml + darkml
     capacity = 10000 - totalml
     print(f"{capacity} ml available")
-    if capacity == 0 and gold == 0: # remove on resets
+    if capacity == 0 and gold == 0: 
          return[]
 
     if(redml <= greenml and redml <= blueml):
