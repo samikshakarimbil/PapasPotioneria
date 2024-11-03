@@ -168,10 +168,10 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                                                    WHERE id = :potion_id"),
                                                    {"qty": qty, "potion_id": id})
              
-        
-            connection.execute(sqlalchemy.text("UPDATE global_inventory \
-                                               SET gold = gold + :pay"),
-                                               {"pay": gold_paid,})
+            t = f"Cart checkout for id {cart_id}"        
+            connection.execute(sqlalchemy.text("""INSERT INTO global_inventory (gold, transaction)
+                                               VALUES (:gold, :transaction)"""),
+                                               {"gold": gold_paid, "transaction": t})
             
             
             

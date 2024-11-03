@@ -22,8 +22,11 @@ class Barrel(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
+
+    print(f"Barrels delivered: {barrels_delivered}, Order_id: {order_id}")
     total_green_ml, total_red_ml, total_blue_ml, total_dark_ml = 0, 0, 0, 0
     total_price = 0
+    t = "Barrel delivery"
     for barrel in barrels_delivered:
         total_price += barrel.price * barrel.quantity
         if barrel.potion_type == [0, 1, 0, 0]:
@@ -36,16 +39,13 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             total_dark_ml += barrel.ml_per_barrel * barrel.quantity
 
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("UPDATE global_inventory \
-                                            SET num_green_ml = num_green_ml + :total_greenml, \
-                                           num_red_ml = num_red_ml + :total_redml, \
-                                           num_blue_ml = num_blue_ml + :total_blueml, \
-                                           num_dark_ml = num_dark_ml + :total_darkml, \
-                                           gold = gold - :total_price"), \
+         
+         connection.execute(sqlalchemy.text("""INSERT INTO global_inventory (gold, num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, transaction) 
+                                            VALUES(:gold, :total_redml, :total_greenml, :total_blueml, :total_darkml, :transaction) """), 
                                             {"total_greenml": total_green_ml, "total_redml": total_red_ml, 
                                              "total_blueml": total_blue_ml, "total_darkml": total_dark_ml,
-                                              "total_price": total_price})
-        print(f"Barrels delivered: {barrels_delivered}, Order_id: {order_id}")
+                                              "gold": -total_price, "transaction": t})
+        
 
     return "OK"
 
@@ -60,8 +60,12 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     plan = []
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
-        result = result.fetchone()
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(gold) AS gold,
+                                                    SUM(num_green_ml) AS num_green_ml,
+                                                    SUM(num_red_ml) AS num_red_ml,
+                                                    SUM(num_blue_ml) AS num_blue_ml,
+                                                    SUM(num_dark_ml) AS num_dark_ml
+                                                    FROM global_inventory""")).mappings().fetchone()
 
     print("Time to buy barrels! Current inventory: ", result)
 

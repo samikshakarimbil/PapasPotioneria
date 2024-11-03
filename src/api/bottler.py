@@ -18,6 +18,9 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
+
+    print(f"Potions delivered: {potions_delivered}, Order_id: {order_id}")
+
     sku = ""
     green_ml, red_ml, blue_ml, dark_ml = 0, 0, 0, 0
 
@@ -25,7 +28,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     green_ppm = 0.4
     red_ppm = 0.4
     blue_ppm = 0.5
-    dark_ppm = 0.7     
+    dark_ppm = 0.6     
+    t = "Potion delivery"
 
     with db.engine.begin() as connection:
         for potion in potions_delivered:
@@ -38,31 +42,16 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             price = int(red_ppm*type[0] + green_ppm*type[1] + blue_ppm*type[2] + dark_ppm*type[3])
             sku = "R" + str(type[0]) + "_G" + str(type[1]) + "_B" + str(type[2]) + "_D" + str(type[3])
 
-            result = connection.execute(sqlalchemy.text("SELECT sku FROM potions WHERE sku = :sku"),
-                           {"sku": sku}).mappings()
-            result = result.fetchall()            
-
-            if not result:
-                connection.execute(sqlalchemy.text("INSERT INTO potions (sku, red_amt, green_amt, blue_amt, dark_amt, inventory, price) \
+            connection.execute(sqlalchemy.text("INSERT INTO potions (sku, red_amt, green_amt, blue_amt, dark_amt, inventory, price) \
                                                VALUES (:sku, :red_amt, :green_amt, :blue_amt, :dark_amt, :inventory, :price)"),
                                             {"sku": sku, "red_amt": type[0], "green_amt": type[1], 
                                              "blue_amt": type[2], "dark_amt": type[3],
                                              "inventory": potion.quantity, "price": price})
-            else:
-                connection.execute(sqlalchemy.text("UPDATE potions SET inventory = inventory + :qty WHERE sku = :sku"),
-                                                   {"sku": sku, "qty": potion.quantity})
                 
-        connection.execute(sqlalchemy.text(
-            "UPDATE global_inventory \
-                SET num_green_ml = num_green_ml - :greenml, \
-                    num_red_ml = num_red_ml - :redml, \
-                    num_blue_ml = num_blue_ml - :blueml, \
-                    num_dark_ml = num_dark_ml - :darkml"),
-                    {"greenml": green_ml, "redml": red_ml, "blueml": blue_ml, "darkml": dark_ml})
-                
-        
-        print(f"Potions delivered: {potions_delivered}, Order_id: {order_id}")
-    
+        connection.execute(sqlalchemy.text("""INSERT INTO global_inventory(num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, transaction)
+                                           VALUES(:redml, :greenml, :blueml, :darkml, :transaction)"""),
+                    {"greenml": -green_ml, "redml": -red_ml, "blueml": -blue_ml, "darkml": -dark_ml, "transaction": t})
+                    
     return "OK"
 
 @router.post("/plan")
@@ -79,7 +68,11 @@ def get_bottle_plan():
     capacity = 50
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).mappings()
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(num_green_ml) AS num_green_ml,
+                                                    SUM(num_red_ml) AS num_red_ml,
+                                                    SUM(num_blue_ml) AS num_blue_ml,
+                                                    SUM(num_dark_ml) AS num_dark_ml
+                                                    FROM global_inventory""")).mappings()
         result = result.fetchone()
         sum = connection.execute(sqlalchemy.text("SELECT SUM(inventory) FROM potions")).mappings()
         sum = sum.fetchone()
