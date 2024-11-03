@@ -92,13 +92,10 @@ def post_visits(visit_id: int, customers: list[Customer]):
 def create_cart(new_cart: Customer):
     """ """
 
-
     with db.engine.begin() as connection:
         id = connection.execute(sqlalchemy.text("INSERT INTO carts (customer, class, level) VALUES (:new_cart, :class, :level) RETURNING id"),
-                            {"new_cart": new_cart.customer_name, "class": new_cart.character_class, "level": new_cart.level}).mappings()
-       
-    id = id.fetchone()
-    print("Created cart  with id ", id["id"])
+                            {"new_cart": new_cart.customer_name, "class": new_cart.character_class, "level": new_cart.level}).mappings().fetchone()
+    print("Created cart with id", id["id"])
     return {"cart_id": int(id["id"])}
 
 
@@ -114,14 +111,13 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT id FROM carts WHERE id = :cart_id"),
-                                  {"cart_id": cart_id}).mappings()
-        result = result.fetchone()
+                                  {"cart_id": cart_id}).mappings().fetchone()
         if not result:
+            print(f"Error fetching cart{cart_id}")
             return {"success": False}
 
         potion = connection.execute(sqlalchemy.text("SELECT id FROM potions WHERE sku = :sku"),
-                           {"sku": item_sku}).mappings()
-        potion = potion.fetchone()
+                           {"sku": item_sku}).mappings().fetchone()
 
         pid = potion["id"]
         qty = cart_item.quantity
@@ -142,33 +138,31 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
     with db.engine.begin() as connection:
         total_qty = connection.execute(sqlalchemy.text("SELECT SUM(quantity) FROM cart_items WHERE cart_id = :cart_id"),
-                                {"cart_id": cart_id}).mappings()
-        total_qty = total_qty.fetchone()["sum"]
+                                {"cart_id": cart_id}).mappings().fetchone()["sum"]
 
         potions = connection.execute(sqlalchemy.text("SELECT potion_id, quantity FROM cart_items WHERE cart_id = :cart_id"),
-                                {"cart_id": cart_id}).mappings()
-        potions = potions.fetchall()
+                                {"cart_id": cart_id}).mappings().fetchall()
 
-        print("Checking out cart ", cart_id)
-        print("Total potions to check out: ", total_qty)
-        print("Potions being checked out: ", potions)
+        print("Checking out cart", cart_id)
+        print("Total potions to check out:", total_qty)
+        print("Potions being checked out:", potions)
 
         if total_qty:
             gold_paid = 0
             for potion in potions:
                 qty = potion["quantity"]
                 id = potion["potion_id"]
-                price = connection.execute(sqlalchemy.text("SELECT price FROM potions WHERE id = :id"),
-                                {"id": id}).mappings()
-                price = price.fetchone()
-                gold_paid += price["price"] * qty
+                pot = connection.execute(sqlalchemy.text("SELECT sku, price FROM potions WHERE id = :id"),
+                                           {"id": id}).mappings().fetchone()
+                gold_paid += pot["price"] * qty
+                sku = pot["sku"]
 
-                connection.execute(sqlalchemy.text("UPDATE potions \
-                                                   SET inventory = inventory - :qty \
-                                                   WHERE id = :potion_id"),
-                                                   {"qty": qty, "potion_id": id})
-             
-            t = f"Cart checkout for id {cart_id}"        
+                t = f"Cart checkout for id {cart_id}"   
+
+                connection.execute(sqlalchemy.text("""INSERT INTO potions (sku, inventory, transaction)
+                                                   VALUES (:sku, :qty, :t)"""),
+                                                   {"sku": sku, "qty": -qty, "t": t})
+                
             connection.execute(sqlalchemy.text("""INSERT INTO global_inventory (gold, transaction)
                                                VALUES (:gold, :transaction)"""),
                                                {"gold": gold_paid, "transaction": t})

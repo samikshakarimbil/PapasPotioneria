@@ -23,6 +23,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
     sku = ""
     green_ml, red_ml, blue_ml, dark_ml = 0, 0, 0, 0
+    t = "Potion delivery"
 
     # Price per ml (ppm) for each colour: change later if prices too low/high
     green_ppm = 0.4
@@ -42,11 +43,11 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             price = int(red_ppm*type[0] + green_ppm*type[1] + blue_ppm*type[2] + dark_ppm*type[3])
             sku = "R" + str(type[0]) + "_G" + str(type[1]) + "_B" + str(type[2]) + "_D" + str(type[3])
 
-            connection.execute(sqlalchemy.text("INSERT INTO potions (sku, red_amt, green_amt, blue_amt, dark_amt, inventory, price) \
-                                               VALUES (:sku, :red_amt, :green_amt, :blue_amt, :dark_amt, :inventory, :price)"),
+            connection.execute(sqlalchemy.text("INSERT INTO potions (sku, red_amt, green_amt, blue_amt, dark_amt, inventory, price, transaction) \
+                                               VALUES (:sku, :red_amt, :green_amt, :blue_amt, :dark_amt, :inventory, :price, :t)"),
                                             {"sku": sku, "red_amt": type[0], "green_amt": type[1], 
                                              "blue_amt": type[2], "dark_amt": type[3],
-                                             "inventory": potion.quantity, "price": price})
+                                             "inventory": potion.quantity, "price": price, "t": t})
                 
         connection.execute(sqlalchemy.text("""INSERT INTO global_inventory(num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, transaction)
                                            VALUES(:redml, :greenml, :blueml, :darkml, :transaction)"""),
@@ -69,10 +70,10 @@ def get_bottle_plan():
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT SUM(num_green_ml) AS num_green_ml,
-                                                    SUM(num_red_ml) AS num_red_ml,
-                                                    SUM(num_blue_ml) AS num_blue_ml,
-                                                    SUM(num_dark_ml) AS num_dark_ml
-                                                    FROM global_inventory""")).mappings()
+                                                        SUM(num_red_ml) AS num_red_ml,
+                                                        SUM(num_blue_ml) AS num_blue_ml,
+                                                        SUM(num_dark_ml) AS num_dark_ml
+                                                        FROM global_inventory""")).mappings()
         result = result.fetchone()
         sum = connection.execute(sqlalchemy.text("SELECT SUM(inventory) FROM potions")).mappings()
         sum = sum.fetchone()
@@ -81,7 +82,6 @@ def get_bottle_plan():
             capacity-= sum["sum"]
 
     # prevent bottling more than 20 potions at once
-    # capacity = capacity if capacity < 20 else 20
     capacity = min(capacity, 20)
 
     greenml = result["num_green_ml"]
