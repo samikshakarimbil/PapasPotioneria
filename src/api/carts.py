@@ -119,7 +119,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         potion = connection.execute(sqlalchemy.text("""SELECT id 
                                                     FROM potions 
                                                     WHERE sku = :sku
-                                                    AND transaction = "Potion delivery" """),
+                                                    AND transaction = 'Potion delivery' """),
                            {"sku": item_sku}).mappings().fetchone()
 
         pid = potion["id"]
