@@ -23,7 +23,6 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
     sku = ""
     green_ml, red_ml, blue_ml, dark_ml = 0, 0, 0, 0
-    t = "Potion delivery"
 
     # Price per ml (ppm) for each colour: change later if prices too low/high
     green_ppm = 0.4
