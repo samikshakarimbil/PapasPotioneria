@@ -35,7 +35,7 @@ def get_catalog():
             "potion_type": type
         }
             
-    print(f"Potion dict: {potion}")
+    print(f"Potion dict: {potion_dict}")
 
     catalog = list(potion_dict.values())
     for potion in catalog:
