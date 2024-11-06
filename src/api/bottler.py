@@ -27,8 +27,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     # Price per ml (ppm) for each colour: change later if prices too low/high
     green_ppm = 0.4
     red_ppm = 0.4
-    blue_ppm = 0.5
-    dark_ppm = 0.6     
+    blue_ppm = 0.48
+    dark_ppm = 0.5    
     t = "Potion delivery"
 
     with db.engine.begin() as connection:
