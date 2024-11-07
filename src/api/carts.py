@@ -54,6 +54,19 @@ def search_orders(
     time is 5 total line items.
     """
 
+    with db.engine.begin() as connection:
+        carts = connection.execute(sqlalchemy.text("""SELECT timestamp, name, sku, potions.id, cart_items.quantity
+                                                   FROM carts
+                                                   JOIN cart_items ON carts.id = cart_id
+                                                   JOIN potions ON cart_items.potion_id = potions.id""")).mappings().fetchall()
+        
+    if customer_name:
+        result = [x for x in carts if x.get("name") == customer_name]        
+    if potion_sku:
+        result = [x for x in carts if x.get("sku") == potion_sku]     
+
+    
+
     return {
         "previous": "",
         "next": "",
