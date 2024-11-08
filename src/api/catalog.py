@@ -38,12 +38,14 @@ def get_catalog():
     print(f"Potion dict: {potion_dict}")
 
     catalog = list(potion_dict.values())
+    newcat = []
     for potion in catalog:
-        if potion["quantity"] == 0:
-            catalog.remove(potion)
+        print(f"Potion: {potion}")
+        if potion["quantity"] > 0:
+            newcat.append(potion)
 
-    if len(catalog) > 6:
-        catalog = catalog[:6]
+    if len(newcat) > 6:
+        newcat = newcat[:6]
 
-    print ("Catalog: ", catalog)
-    return catalog
+    print ("Catalog: ", newcat)
+    return newcat
