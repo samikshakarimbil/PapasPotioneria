@@ -84,13 +84,9 @@ def search_orders(
     print(f"End: {end}")
     result = result[search_page:end]
 
-    previous = str(search_page-max_items) if search_page > max_items else ""
+    previous = str(search_page-max_items) if search_page >= max_items else ""
     next = str(end) if end < result_length else ""
     print(f"Previous: {previous}\nNext: {next}")
-
-    print("Search results after pagnination:")
-    for r in result:
-        print(f"{r}\n")
 
     return {
         "previous": previous,
