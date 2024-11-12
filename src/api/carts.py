@@ -61,7 +61,8 @@ def search_orders(
         result = connection.execute(sqlalchemy.text("""SELECT potions.id AS line_item_id,
                                                     sku AS item_sku,
                                                     customer AS customer_name,
-                                                    cart_items.quantity AS line_item_total, timestamp
+                                                    (cart_items.quantity*potions.price) AS line_item_total, 
+                                                    timestamp
                                                     FROM carts
                                                     JOIN cart_items ON carts.id = cart_id
                                                     JOIN potions ON cart_items.potion_id = potions.id""")).mappings().fetchall()
@@ -76,8 +77,20 @@ def search_orders(
     else:
         result.sort(key=lambda x: x[sort_col], reverse=True)
 
+    print("Search results:")
+    for r in result:
+        print(f"{r}\n")
+
     print(f"Search page: {search_page}")
-    
+    search_page = int(search_page) if search_page else 0
+    end = search_page + max_items 
+
+    result = result[search_page:end+1]
+
+    previous = str(search_page-max_items) if search_page > 0 else ""
+    next = str(end) if end < len(result) else ""
+
+    print("Search results after pagnination:")
     for r in result:
         print(f"{r}\n")
 
