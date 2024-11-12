@@ -77,18 +77,16 @@ def search_orders(
     else:
         result.sort(key=lambda x: x[sort_col], reverse=True)
 
-    print("Search results:")
-    for r in result:
-        print(f"{r}\n")
-
+    result_length = len(result)
     print(f"Search page: {search_page}")
     search_page = int(search_page) if search_page else 0
     end = search_page + max_items 
+    print(f"End: {end}")
+    result = result[search_page:end]
 
-    result = result[search_page:end+1]
-
-    previous = str(search_page-max_items) if search_page > 0 else ""
-    next = str(end) if end < len(result) else ""
+    previous = str(search_page-max_items) if search_page > max_items else ""
+    next = str(end) if end < result_length else ""
+    print(f"Previous: {previous}\nNext: {next}")
 
     print("Search results after pagnination:")
     for r in result:
