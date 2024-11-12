@@ -78,15 +78,12 @@ def search_orders(
         result.sort(key=lambda x: x[sort_col], reverse=True)
 
     result_length = len(result)
-    print(f"Search page: {search_page}")
     search_page = int(search_page) if search_page else 0
     end = search_page + max_items 
-    print(f"End: {end}")
     result = result[search_page:end]
 
     previous = str(search_page-max_items) if search_page >= max_items else ""
     next = str(end) if end < result_length else ""
-    print(f"Previous: {previous}\nNext: {next}")
 
     return {
         "previous": previous,
