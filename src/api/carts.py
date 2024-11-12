@@ -54,34 +54,38 @@ def search_orders(
     time is 5 total line items.
     """
 
+    max_items = 5
+    previous = ""
+    next = ""
     with db.engine.begin() as connection:
-        carts = connection.execute(sqlalchemy.text("""SELECT timestamp, name, sku, potions.id, cart_items.quantity
-                                                   FROM carts
-                                                   JOIN cart_items ON carts.id = cart_id
-                                                   JOIN potions ON cart_items.potion_id = potions.id""")).mappings().fetchall()
+        result = connection.execute(sqlalchemy.text("""SELECT potions.id AS line_item_id,
+                                                    sku AS item_sku,
+                                                    customer AS customer_name,
+                                                    cart_items.quantity AS line_item_total, timestamp
+                                                    FROM carts
+                                                    JOIN cart_items ON carts.id = cart_id
+                                                    JOIN potions ON cart_items.potion_id = potions.id""")).mappings().fetchall()
         
     if customer_name:
-        result = [x for x in carts if x.get("name") == customer_name]        
+        result = [x for x in result if x.get("customer_name") == customer_name]        
     if potion_sku:
-        result = [x for x in carts if x.get("sku") == potion_sku]     
+        result = [x for x in result if x.get("item_sku") == potion_sku]     
 
+    if sort_order == "asc":
+        result.sort(key=lambda x: x[sort_col])
+    else:
+        result.sort(key=lambda x: x[sort_col], reverse=True)
+
+    print(f"Search page: {search_page}")
     
+    for r in result:
+        print(f"{r}\n")
 
     return {
-        "previous": "",
-        "next": "",
-        "results": [
-            {
-                "line_item_id": 1,
-                "item_sku": "1 oblivion potion",
-                "customer_name": "Scaramouche",
-                "line_item_total": 50,
-                "timestamp": "2021-01-01T00:00:00Z",
-            }
-        ],
+        "previous": previous,
+        "next": next,
+        "results": result,
     }
-
-cart_id=0
 
 class Customer(BaseModel):
     customer_name: str
