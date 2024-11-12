@@ -58,7 +58,7 @@ def search_orders(
     previous = ""
     next = ""
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT potions.id AS line_item_id,
+        result = connection.execute(sqlalchemy.text("""SELECT cart_items.id AS line_item_id,
                                                     sku AS item_sku,
                                                     customer AS customer_name,
                                                     (cart_items.quantity*potions.price) AS line_item_total, 
