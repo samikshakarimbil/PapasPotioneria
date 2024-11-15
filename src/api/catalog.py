@@ -35,12 +35,9 @@ def get_catalog():
             "potion_type": type
         }
             
-    print(f"Potion dict: {potion_dict}")
-
     catalog = list(potion_dict.values())
     newcat = []
     for potion in catalog:
-        print(f"Potion: {potion}")
         if potion["quantity"] > 0:
             newcat.append(potion)
 

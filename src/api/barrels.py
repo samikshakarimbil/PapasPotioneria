@@ -53,7 +53,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
-    sorted_catalog = sorted(wholesale_catalog, key=lambda x: x.price) # reverse=True
+    sorted_catalog = sorted(wholesale_catalog, key=lambda x: x.price, reverse=True) # reverse=True
     print("Sorted catalog: ", sorted_catalog)
 
     bp = 0
@@ -75,7 +75,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     darkml = result["num_dark_ml"]
     gold = result["gold"]
 
-    #gold = gold - 100 if gold > 100 else gold  remove on resets
+    gold = gold - 100 if gold > 100 else gold # remove on resets
     print(f"Budget: {gold}")
 
     totalml = greenml + redml + blueml + darkml
