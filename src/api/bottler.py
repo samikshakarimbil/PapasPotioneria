@@ -65,18 +65,18 @@ def get_bottle_plan():
     # Expressed in integers from 1 to 100 that must sum up to 100.
 
     plan = []
-    capacity = 50
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT SUM(num_green_ml) AS num_green_ml,
                                                         SUM(num_red_ml) AS num_red_ml,
                                                         SUM(num_blue_ml) AS num_blue_ml,
                                                         SUM(num_dark_ml) AS num_dark_ml
-                                                        FROM global_inventory""")).mappings()
-        result = result.fetchone()
-        sum = connection.execute(sqlalchemy.text("SELECT SUM(inventory) FROM potions")).mappings()
-        sum = sum.fetchone()
+                                                        FROM global_inventory""")).mappings().fetchone()
         
+        sum = connection.execute(sqlalchemy.text("SELECT SUM(inventory) FROM potions")).mappings().fetchone()
+
+        capacity = connection.execute(sqlalchemy.text("SELECT potion_cap FROM capacity")).scalar_one_or_none()
+
         if (sum["sum"]):
             capacity-= sum["sum"]
 

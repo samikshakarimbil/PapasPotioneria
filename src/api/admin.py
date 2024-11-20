@@ -25,5 +25,8 @@ def reset():
         connection.execute(sqlalchemy.text("DELETE from cart_items"))
         connection.execute(sqlalchemy.text("DELETE from carts"))
         connection.execute(sqlalchemy.text("DELETE from potions"))
+        connection.execute(sqlalchemy.text("DELETE from capacity"))
+        connection.execute(sqlalchemy.text("""INSERT INTO capacity(potion_cap, ml_cap)
+                                           VALUES(50, 10000)"""))
     return "OK"
 

@@ -66,6 +66,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                                                     SUM(num_blue_ml) AS num_blue_ml,
                                                     SUM(num_dark_ml) AS num_dark_ml
                                                     FROM global_inventory""")).mappings().fetchone()
+        
+        capacity = connection.execute(sqlalchemy.text("SELECT ml_cap FROM capacity")).scalar_one_or_none()
 
     print("Time to buy barrels! Current inventory: ", result)
 
@@ -75,11 +77,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     darkml = result["num_dark_ml"]
     gold = result["gold"]
 
-    gold = gold - 100 if gold > 100 else gold # remove on resets
+    gold = gold - 1000 if gold > 1000 else gold # remove on resets
     print(f"Budget: {gold}")
 
     totalml = greenml + redml + blueml + darkml
-    capacity = 10000 - totalml
+    capacity -= totalml
     print(f"{capacity} ml available")
     if capacity == 0 and gold == 0: 
          return[]
