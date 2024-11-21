@@ -50,8 +50,8 @@ def get_capacity_plan():
         cap = connection.execute(sqlalchemy.text("SELECT potion_cap, ml_cap FROM capacity")).mappings().fetchone()
 
     print(f"Gold: {gold}, cap: {cap}")
-    mlgoldcap = (cap["ml_cap"] / 10000) * 4000
-    pgoldcap = (cap["potion_cap"] / 50) * 4000
+    mlgoldcap = (cap["ml_cap"] / 10000) * 5000
+    pgoldcap = (cap["potion_cap"] / 50) * 5000
 
     if gold > mlgoldcap:
         mlcap = 1    
