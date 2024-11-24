@@ -61,8 +61,8 @@ def get_capacity_plan():
         gold -= 1000
 
     return {
-        "potion_capacity": pcap,
-        "ml_capacity": mlcap
+        "potion_capacity": 0,
+        "ml_capacity": 0
         }
 
 class CapacityPurchase(BaseModel):
